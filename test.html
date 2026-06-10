@@ -1,0 +1,497 @@
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Targeted Wordlist Generator</title><style>
+*,::after,::before{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1012;--surface:#17181c;--surface2:#1e2026;--surface3:#26282f;--text:#e8e6e1;--text2:#9a9890;--text3:#5c5a55;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);--accent:#39e07a;--accent-dim:#1a4a32;--accent-text:#0a1f14;--warn:#f5a623;--warn-dim:#3a2800;--red:#e05555;--red-dim:#3a1515;--radius:7px;--radius-lg:11px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--mono:"SF Mono","Fira Code","Consolas",monospace}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:20px;font-weight:500;display:flex;align-items:center;gap:10px;margin-bottom:3px}
+h1 svg{opacity:.5}
+.sub{font-size:13px;color:var(--text2);margin-bottom:2rem}
+.sub span{color:var(--accent);opacity:.8}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+.layout>div{display:flex;flex-direction:column}
+.layout>div>.panel:last-child{flex:1}
+@media(max-width:700px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:16px}
+.panel-title{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:7px}
+.panel-title-left{display:flex;align-items:center;gap:7px}
+.panel-title svg{opacity:.6}
+label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;margin-top:10px}
+label:first-of-type{margin-top:0}
+input[type=number],input[type=text],select,textarea{width:100%;font-size:13px;padding:7px 10px;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);outline:0;font-family:var(--font);transition:border-color .13s}
+input[type=number]:focus,input[type=text]:focus,select:focus,textarea:focus{border-color:var(--accent);outline:0}
+input[type=file]{width:100%;font-size:12px;padding:6px 10px;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text2);cursor:pointer}
+input[type=file]::file-selector-button{background:var(--surface3);color:var(--text);border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;margin-right:8px}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+textarea{resize:vertical;min-height:70px;font-family:var(--mono);font-size:12px;line-height:1.5}
+select option{background:var(--surface2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;align-items:stretch}
+.toggle-grid .toggle{margin-top:0!important;margin-bottom:0!important}
+.toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border:.5px solid var(--border);border-radius:var(--radius);cursor:pointer;user-select:none;transition:border-color .13s,background .13s;font-size:11px;color:var(--text2);height:36px;overflow:hidden}
+.toggle:hover{border-color:var(--border2);color:var(--text)}
+.toggle.on{border-color:var(--accent-dim);background:rgba(57,224,122,.06);color:var(--text);font-weight:normal}
+.toggle input{display:none}
+.tog-box{width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .13s}
+.toggle.on .tog-box{background:var(--accent);border-color:var(--accent)}
+.tog-check{display:none}
+.toggle.on .tog-check{display:block}
+.leet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px;margin-top:6px}
+.leet-pair{display:flex;align-items:center;gap:4px;font-size:12px;background:var(--surface2);border:.5px solid var(--border);border-radius:var(--radius);padding:4px 7px}
+.leet-char{font-family:var(--mono);color:var(--accent);font-weight:500;min-width:12px}
+.leet-arr{color:var(--text3);font-size:10px}
+.leet-sub{font-family:var(--mono);color:var(--text2)}
+.btn-generate{width:100%;padding:11px;font-size:14px;font-weight:500;border:none;border-radius:var(--radius-lg);cursor:pointer;background:var(--accent);color:var(--accent-text);font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;margin-top:16px}
+.btn-generate:hover{opacity:.88}
+.btn-generate:disabled{opacity:.35;cursor:default}
+.output-panel{background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-lg);margin-top:16px;overflow:hidden}
+.output-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--border)}
+.output-title{font-size:12px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:8px}
+.word-count{background:var(--accent-dim);color:var(--accent);font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px}
+.output-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-sm{padding:5px 13px;font-size:12px;font-weight:500;border:.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surface2);color:var(--text);font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .13s}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm.dl{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.btn-sm.dl:hover{background:var(--accent);color:var(--accent-text)}
+.output-area{font-family:var(--mono);font-size:12px;line-height:1.6;padding:14px 16px;max-height:340px;overflow-y:auto;color:var(--text);white-space:pre-wrap;word-break:break-all;background:var(--bg)}
+.filter-strip{display:flex;gap:8px;align-items:center;padding:10px 16px;border-bottom:.5px solid var(--border);flex-wrap:wrap}
+.filter-strip label{font-size:12px;color:var(--text2);white-space:nowrap}
+.filter-strip input[type=number]{width:68px}
+.filter-strip input[type=text]{flex:1;min-width:120px}
+.filter-strip select{width:auto;font-size:12px;padding:5px 8px}
+.prog-bar-bg{height:3px;background:var(--surface3)}
+.prog-bar-fill{height:100%;background:var(--accent);width:0%;transition:width .4s}
+.warn-box{background:var(--warn-dim);border:.5px solid var(--warn);border-radius:var(--radius);padding:9px 13px;font-size:12px;color:var(--warn);margin-top:10px;display:none}
+.limit-box{background:var(--red-dim);border:.5px solid var(--red);border-radius:var(--radius);padding:9px 13px;font-size:12px;color:var(--red);margin-top:10px;display:none}
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.stat-pill{background:var(--surface2);border:.5px solid var(--border);border-radius:var(--radius);padding:6px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.stat-pill strong{color:var(--text);font-weight:500}
+/* profile save/load */
+.profile-bar{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.btn-xs{padding:4px 10px;font-size:11px;font-weight:500;border:.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surface2);color:var(--text2);font-family:var(--font);transition:all .13s}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent)}
+.btn-xs.save{border-color:var(--accent-dim);color:var(--accent)}
+.saved-profiles{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.profile-chip{padding:3px 9px;font-size:11px;border:.5px solid var(--border2);border-radius:20px;cursor:pointer;background:var(--surface2);color:var(--text2);display:flex;align-items:center;gap:5px;transition:all .13s}
+.profile-chip:hover{border-color:var(--accent);color:var(--text)}
+.profile-chip .del{color:var(--text3);font-size:10px;margin-left:2px}
+.profile-chip .del:hover{color:var(--red)}
+footer{text-align:center;margin-top:3rem;font-size:12px;color:var(--text3)}
+</style></head><body><div class="wrap">
+
+<h1><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 12h4"/></svg>Targeted wordlist generator</h1>
+<p class="sub">Builds permuted wordlists from profile data for use in <span>authorised</span> penetration testing &amp; CTF challenges.</p>
+
+<div class="layout">
+
+<!-- LEFT COLUMN -->
+<div>
+  <div class="panel">
+    <div class="panel-title">
+      <div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Person profile</div>
+    </div>
+    <div class="row2">
+      <div><label>First name</label><input type="text" id="p-first" placeholder="e.g. john"></div>
+      <div><label>Last name</label><input type="text" id="p-last" placeholder="e.g. smith"></div>
+    </div>
+    <div class="row2">
+      <div><label>Nickname / username</label><input type="text" id="p-nick" placeholder="e.g. johnny"></div>
+      <div><label>Date of birth</label><input type="text" id="p-dob" placeholder="e.g. 15/06/1990"></div>
+    </div>
+    <div class="row2">
+      <div><label>Partner name</label><input type="text" id="p-partner" placeholder="e.g. sarah"></div>
+      <div><label>Pet name</label><input type="text" id="p-pet" placeholder="e.g. rex"></div>
+    </div>
+    <div class="row2">
+      <div><label>Company / org</label><input type="text" id="p-company" placeholder="e.g. acme"></div>
+      <div><label>City / location</label><input type="text" id="p-city" placeholder="e.g. london"></div>
+    </div>
+    <label>Keywords (one per line or comma-separated)</label>
+    <textarea id="p-keywords" placeholder="e.g. football, arsenal, guitar, admin, password"></textarea>
+    <label>Phone number digits (last 4 used)</label>
+    <input type="text" id="p-phone" placeholder="e.g. 07912345678">
+    <!-- SAVE/LOAD PROFILES -->
+    <div class="profile-bar">
+      <button class="btn-xs save" onclick="saveProfile()">&#43; Save profile</button>
+      <button class="btn-xs" onclick="clearProfile()">Clear</button>
+    </div>
+    <div class="saved-profiles" id="saved-profiles"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Custom word import</div></div>
+    <label>Paste extra words (one per line)</label>
+    <textarea id="p-custom" placeholder="Paste any additional base words here..." style="min-height:70px"></textarea>
+    <label>Upload wordlist file (.txt)</label>
+    <input type="file" id="p-file" accept=".txt" onchange="loadWordFile(this)">
+  </div>
+</div>
+
+<!-- RIGHT COLUMN -->
+<div>
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Mutations</div></div>
+    <div class="toggle-grid" id="mutation-toggles">
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Case variations</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Leet speak</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Common suffixes</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Date permutations</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Word combinations</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Reverse words</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Common prefixes</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Symbol wrapping</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Keyboard walks</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Double word</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Year range</label>
+    </div>
+    <!-- Year range inputs -->
+    <div id="year-range-opts" style="display:none;margin-top:8px">
+      <div class="row2">
+        <div><label>From year</label><input type="number" id="yr-from" value="2000" min="1900" max="2099"></div>
+        <div><label>To year</label><input type="number" id="yr-to" value="2026" min="1900" max="2099"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Leet substitutions</div></div>
+    <div class="leet-grid" id="leet-display"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>Output filters</div></div>
+    <div class="row3">
+      <div><label>Min length</label><input type="number" id="f-min" value="6" min="1" max="32"></div>
+      <div><label>Max length</label><input type="number" id="f-max" value="20" min="1" max="64"></div>
+      <div><label>Max words</label><input type="number" id="f-limit" value="50000" min="100" max="500000"></div>
+    </div>
+    <label>Must contain (optional)</label>
+    <input type="text" id="f-must" placeholder="e.g. 2024 — leave blank for all">
+    <div id="warn-box" class="warn-box">Large wordlist — may take a moment to generate.</div>
+    <div id="limit-box" class="limit-box">Word limit reached — increase max words or narrow inputs.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Custom suffixes &amp; prefixes</div></div>
+    <div class="row2">
+      <div>
+        <label>Extra suffixes (comma-separated)</label>
+        <input type="text" id="c-suffixes" placeholder="e.g. 2025,!@,#1,xyz">
+      </div>
+      <div>
+        <label>Extra prefixes (comma-separated)</label>
+        <input type="text" id="c-prefixes" placeholder="e.g. super,old,new">
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<button class="btn-generate" id="btn-gen" onclick="generate()">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+  Generate wordlist
+</button>
+
+<div id="stats-row" class="stats-row" style="display:none"></div>
+
+<div class="output-panel" id="output-panel" style="display:none">
+  <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill"></div></div>
+  <div class="output-header">
+    <div class="output-title">Generated wordlist <span class="word-count" id="word-count">0 words</span></div>
+    <div class="output-actions">
+      <button class="btn-sm" onclick="copyAll()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+      <button class="btn-sm dl" onclick="downloadList()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download .txt</button>
+    </div>
+  </div>
+  <div class="filter-strip">
+    <label>Min</label><input type="number" id="live-min" value="6" min="1" max="64" style="width:56px" oninput="applyLiveFilter()">
+    <label>Max</label><input type="number" id="live-max" value="20" min="1" max="64" style="width:56px" oninput="applyLiveFilter()">
+    <label>Search</label><input type="text" id="live-search" placeholder="filter preview..." oninput="applyLiveFilter()">
+    <label>Sort</label>
+    <select id="live-sort" onchange="applyLiveFilter()" style="width:auto;font-size:12px;padding:5px 8px">
+      <option value="default">Default</option>
+      <option value="alpha">A–Z</option>
+      <option value="alpha-desc">Z–A</option>
+      <option value="length">Shortest first</option>
+      <option value="length-desc">Longest first</option>
+      <option value="shuffle">Shuffle</option>
+    </select>
+    <label style="margin-left:auto;color:var(--text3)" id="showing-lbl"></label>
+  </div>
+  <div class="output-area" id="output-area"></div>
+</div>
+
+<footer>Targeted Wordlist Generator &mdash; runs entirely in your browser, nothing is sent anywhere.</footer>
+</div>
+
+<script>
+var LEET={a:["@","4"],e:["3"],i:["1","!"],o:["0"],s:["$","5"],t:["7"],g:["9"],b:["8"],l:["1"]};
+
+// ── Leet display
+(function(){
+  var n=document.getElementById("leet-display");
+  Object.keys(LEET).forEach(function(t){LEET[t].forEach(function(e){n.innerHTML+='<div class="leet-pair"><span class="leet-char">'+t+'</span><span class="leet-arr">\u2192</span><span class="leet-sub">'+e+"</span></div>"})});
+})();
+
+// ── Year range toggle visibility
+document.querySelectorAll("#mutation-toggles .toggle")[10].addEventListener("click",function(){
+  setTimeout(function(){
+    var on=document.querySelectorAll("#mutation-toggles .toggle")[10].classList.contains("on");
+    document.getElementById("year-range-opts").style.display=on?"block":"none";
+  },0);
+});
+
+function tog(e){e.classList.toggle("on");e.querySelector("input").checked=e.classList.contains("on")}
+function isOn(e){return document.querySelectorAll("#mutation-toggles .toggle")[e].classList.contains("on")}
+
+var SUFFIXES=["1","2","12","21","123","1234","12345","007","69","99","00","!","!!","#","@","$","*",".","2024","2023","2022","2021","2020","2019","2018","01","02","1!","123!","1234!","!1","@1","#1","pw","pass","pwd","admin","root","login"];
+var PREFIXES=["the","my","mr","ms","dr","@","!","1","123","_","00"];
+var SYMBOLS=["!","@","#","$","*","_",".","?"];
+var KEYBOARD_WALKS=["qwerty","asdf","zxcv","qweasd","1234qwer","qazwsx","zxcvbn","asdfgh","qwerty123","asdfghjkl"];
+
+function caseVariants(e){var t=new Set;t.add(e.toLowerCase());t.add(e.toUpperCase());t.add(e[0].toUpperCase()+e.slice(1).toLowerCase());var n="";for(var o=0;o<e.length;o++)n+=o%2==0?e[o].toUpperCase():e[o].toLowerCase();t.add(n);return Array.from(t)}
+
+function leetVariants(t){var n=[t=t.toLowerCase()];for(var o=0;o<t.length;o++){var e=t[o];LEET[e]&&LEET[e].forEach(function(e){n.push(t.slice(0,o)+e+t.slice(o+1))})}var a="";for(var r=0;r<t.length;r++)a+=LEET[t[r]]?LEET[t[r]][0]:t[r];if(a!==t)n.push(a);return n}
+
+function datePerms(e){var t=[];if(!e)return t;var n=e.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);if(!n)return t;var o=n[1].padStart(2,"0"),a=n[2].padStart(2,"0"),r=n[3],l=r.slice(-2),i=4===r.length?r:"19"+r;[o+a+i,o+a+l,a+o+i,a+o+l,i+a+o,i+o+a,o+a,a+o,i,l,o,a,o+"/"+a+"/"+i,a+"/"+o+"/"+i].forEach(function(e){if(e)t.push(e)});return t}
+
+function parseWords(e){return e.split(/[\n,]+/).map(function(e){return e.trim().toLowerCase()}).filter(function(e){return e.length>0})}
+
+// ── File upload
+function loadWordFile(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var existing=document.getElementById("p-custom").value.trim();
+    var newWords=e.target.result.trim();
+    document.getElementById("p-custom").value=existing?(existing+"\n"+newWords):newWords;
+  };
+  reader.readAsText(file);
+}
+
+// ── Profile save/load
+function profileFields(){
+  return["p-first","p-last","p-nick","p-dob","p-partner","p-pet","p-company","p-city","p-keywords","p-phone"];
+}
+function saveProfile(){
+  var name=prompt("Profile name:");
+  if(!name||!name.trim())return;
+  name=name.trim();
+  var data={};
+  profileFields().forEach(function(id){data[id]=document.getElementById(id).value});
+  var profiles=getSavedProfiles();
+  profiles[name]=data;
+  localStorage.setItem("wlgen_profiles",JSON.stringify(profiles));
+  renderProfiles();
+}
+function getSavedProfiles(){
+  try{return JSON.parse(localStorage.getItem("wlgen_profiles"))||{}}catch(e){return{}}
+}
+function loadProfile(name){
+  var profiles=getSavedProfiles();
+  var data=profiles[name];if(!data)return;
+  profileFields().forEach(function(id){if(data[id]!==undefined)document.getElementById(id).value=data[id]});
+}
+function deleteProfile(name){
+  var profiles=getSavedProfiles();
+  delete profiles[name];
+  localStorage.setItem("wlgen_profiles",JSON.stringify(profiles));
+  renderProfiles();
+}
+function clearProfile(){
+  profileFields().forEach(function(id){document.getElementById(id).value=""});
+}
+function renderProfiles(){
+  var profiles=getSavedProfiles();
+  var container=document.getElementById("saved-profiles");
+  var keys=Object.keys(profiles);
+  if(keys.length===0){container.innerHTML="";return}
+  container.innerHTML=keys.map(function(name){
+    return'<span class="profile-chip" onclick="loadProfile(\''+name.replace(/'/g,"\\'")+'\')" title="Load \''+name+'\'">'+name+'<span class="del" onclick="event.stopPropagation();deleteProfile(\''+name.replace(/'/g,"\\'")+'\')">&#10005;</span></span>';
+  }).join("");
+}
+renderProfiles();
+
+function getBaseWords(){
+  var t=new Set;
+  function e(e){e&&e.trim().split(/\s+/).forEach(function(e){e&&t.add(e.toLowerCase())})}
+  e(document.getElementById("p-first").value);
+  e(document.getElementById("p-last").value);
+  e(document.getElementById("p-nick").value);
+  e(document.getElementById("p-partner").value);
+  e(document.getElementById("p-pet").value);
+  e(document.getElementById("p-company").value);
+  e(document.getElementById("p-city").value);
+  parseWords(document.getElementById("p-keywords").value).forEach(function(e){t.add(e)});
+  parseWords(document.getElementById("p-custom").value).forEach(function(e){t.add(e)});
+  var n=document.getElementById("p-phone").value.replace(/\D/g,"");
+  if(n.length>=4){t.add(n.slice(-4));t.add(n.slice(-6))}
+  var fn=document.getElementById("p-first").value.trim().toLowerCase();
+  var ln=document.getElementById("p-last").value.trim().toLowerCase();
+  if(fn&&ln){t.add(fn+ln);t.add(ln+fn);t.add(fn+"."+ln);t.add(fn[0]+ln);t.add(fn+ln[0])}
+  return Array.from(t).filter(function(e){return e.length>0});
+}
+
+var FULL_LIST=[];
+
+function generate(){
+  var btn=document.getElementById("btn-gen");
+  btn.disabled=true;btn.textContent="Generating...";
+  document.getElementById("warn-box").style.display="none";
+  document.getElementById("limit-box").style.display="none";
+  document.getElementById("prog-fill").style.width="60%";
+  setTimeout(function(){
+    try{doGenerate()}catch(e){console.error(e)}
+    btn.disabled=false;
+    btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate wordlist';
+  },30);
+}
+
+function doGenerate(){
+  var minLen=parseInt(document.getElementById("f-min").value)||6;
+  var maxLen=parseInt(document.getElementById("f-max").value)||20;
+  var limit=parseInt(document.getElementById("f-limit").value)||50000;
+  var mustContain=document.getElementById("f-must").value.trim().toLowerCase();
+
+  var doCaseVar=isOn(0),doLeet=isOn(1),doSuffixes=isOn(2),doDates=isOn(3);
+  var doCombos=isOn(4),doReverse=isOn(5),doPrefixes=isOn(6),doSymbols=isOn(7);
+  var doWalks=isOn(8),doDouble=isOn(9),doYears=isOn(10);
+
+  // Custom suffixes/prefixes
+  var extraSuffixes=document.getElementById("c-suffixes").value.split(",").map(function(s){return s.trim()}).filter(function(s){return s.length>0});
+  var extraPrefixes=document.getElementById("c-prefixes").value.split(",").map(function(s){return s.trim()}).filter(function(s){return s.length>0});
+  var allSuffixes=SUFFIXES.concat(extraSuffixes);
+  var allPrefixes=PREFIXES.concat(extraPrefixes);
+
+  // Year range
+  var yearList=[];
+  if(doYears){
+    var yrFrom=parseInt(document.getElementById("yr-from").value)||2000;
+    var yrTo=parseInt(document.getElementById("yr-to").value)||2026;
+    for(var y=yrFrom;y<=yrTo;y++){yearList.push(String(y));yearList.push(String(y).slice(-2))}
+  }
+
+  var bases=getBaseWords();
+  if(bases.length===0){alert("Enter at least one profile field or keyword.");return}
+
+  var pool=new Set;
+
+  function addIfOk(w){
+    if(pool.size>=limit)return false;
+    if(w.length<minLen||w.length>maxLen)return true;
+    if(mustContain&&w.toLowerCase().indexOf(mustContain)===-1)return true;
+    pool.add(w);return true;
+  }
+
+  var dob=document.getElementById("p-dob").value.trim();
+  var dateParts=datePerms(dob);
+  if(doDates)dateParts.forEach(function(d){addIfOk(d)});
+  if(doWalks)KEYBOARD_WALKS.forEach(function(w){addIfOk(w)});
+  if(doYears)yearList.forEach(function(y){addIfOk(y)});
+
+  bases.forEach(function(base){
+    if(pool.size>=limit)return;
+    var variants=[base];
+    if(doCaseVar)variants=variants.concat(caseVariants(base));
+    if(doLeet){var lv=leetVariants(base);if(doCaseVar)lv.forEach(function(l){variants=variants.concat(caseVariants(l))});variants=variants.concat(lv)}
+    if(doReverse)variants.push(base.split("").reverse().join(""));
+    if(doDouble){variants.push(base+base);variants.push(base+"_"+base)}
+    variants.forEach(function(v){addIfOk(v)});
+    if(pool.size>=limit)return;
+
+    if(doSuffixes){
+      variants.forEach(function(v){allSuffixes.forEach(function(s){addIfOk(v+s)})});
+      if(doDates)variants.forEach(function(v){dateParts.forEach(function(d){addIfOk(v+d);addIfOk(d+v)})});
+      if(doYears)variants.forEach(function(v){yearList.forEach(function(y){addIfOk(v+y);addIfOk(y+v)})});
+    }
+    if(doPrefixes)allPrefixes.forEach(function(p){variants.forEach(function(v){addIfOk(p+v)})});
+    if(doSymbols)SYMBOLS.forEach(function(s){variants.forEach(function(v){addIfOk(s+v+s);addIfOk(v+s+s)})});
+  });
+
+  if(doCombos&&bases.length>1&&pool.size<limit){
+    for(var i=0;i<bases.length&&pool.size<limit;i++){
+      for(var j=0;j<bases.length&&pool.size<limit;j++){
+        if(i===j)continue;
+        var combo=bases[i]+bases[j];
+        addIfOk(combo);addIfOk(bases[i]+"_"+bases[j]);addIfOk(bases[i]+"."+bases[j]);
+        if(doSuffixes)allSuffixes.slice(0,12).forEach(function(s){addIfOk(combo+s)});
+      }
+    }
+  }
+
+  FULL_LIST=Array.from(pool);
+  var hitLimit=FULL_LIST.length>=limit;
+
+  document.getElementById("warn-box").style.display=FULL_LIST.length>20000?"block":"none";
+  document.getElementById("limit-box").style.display=hitLimit?"block":"none";
+  document.getElementById("live-min").value=minLen;
+  document.getElementById("live-max").value=maxLen;
+  document.getElementById("live-search").value="";
+  document.getElementById("live-sort").value="default";
+
+  var sr=document.getElementById("stats-row");
+  sr.style.display="flex";
+  sr.innerHTML='<div class="stat-pill">Total generated <strong>'+FULL_LIST.length.toLocaleString()+'</strong></div>'+
+    '<div class="stat-pill">Base words <strong>'+bases.length+'</strong></div>'+
+    '<div class="stat-pill">Length range <strong>'+minLen+"\u2013"+maxLen+'</strong></div>'+
+    (hitLimit?'<div class="stat-pill" style="color:var(--red)">Limit hit \u2014 increase max words</div>':"");
+
+  document.getElementById("prog-fill").style.width="100%";
+  setTimeout(function(){document.getElementById("prog-fill").style.width="0%"},600);
+  document.getElementById("output-panel").style.display="block";
+  applyLiveFilter();
+}
+
+function sortList(arr, mode){
+  if(mode==="alpha")return arr.slice().sort();
+  if(mode==="alpha-desc")return arr.slice().sort().reverse();
+  if(mode==="length")return arr.slice().sort(function(a,b){return a.length-b.length});
+  if(mode==="length-desc")return arr.slice().sort(function(a,b){return b.length-a.length});
+  if(mode==="shuffle"){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=a[i];a[i]=a[j];a[j]=tmp}return a}
+  return arr;
+}
+
+function applyLiveFilter(){
+  var mn=parseInt(document.getElementById("live-min").value)||1;
+  var mx=parseInt(document.getElementById("live-max").value)||999;
+  var q=(document.getElementById("live-search").value||"").toLowerCase();
+  var sortMode=document.getElementById("live-sort").value;
+  var filtered=FULL_LIST.filter(function(w){return w.length>=mn&&w.length<=mx&&(!q||w.indexOf(q)>-1)});
+  filtered=sortList(filtered,sortMode);
+  document.getElementById("word-count").textContent=filtered.length.toLocaleString()+" words";
+  document.getElementById("showing-lbl").textContent="Showing "+Math.min(filtered.length,2000).toLocaleString()+" of "+filtered.length.toLocaleString();
+  document.getElementById("output-area").textContent=filtered.slice(0,2000).join("\n");
+}
+
+function getFiltered(){
+  var mn=parseInt(document.getElementById("live-min").value)||1;
+  var mx=parseInt(document.getElementById("live-max").value)||999;
+  var q=(document.getElementById("live-search").value||"").toLowerCase();
+  var sortMode=document.getElementById("live-sort").value;
+  var filtered=FULL_LIST.filter(function(w){return w.length>=mn&&w.length<=mx&&(!q||w.indexOf(q)>-1)});
+  return sortList(filtered,sortMode);
+}
+
+function copyAll(){
+  var txt=getFiltered().join("\n");
+  function fallback(t){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");showFlash("Copied!")}catch(e){alert("Copy failed — try download instead.")}document.body.removeChild(ta)}
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(function(){showFlash("Copied!")}).catch(function(){fallback(txt)})}else{fallback(txt)}
+}
+
+function downloadList(){
+  var words=getFiltered();
+  if(words.length===0){alert("No words to download.");return}
+  var blob=new Blob([words.join("\n")],{type:"text/plain"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  var target=document.getElementById("p-first").value.trim()||"wordlist";
+  a.download=target.toLowerCase().replace(/\s+/g,"_")+"_wordlist.txt";
+  a.click();
+}
+
+function showFlash(msg){
+  var btn=document.querySelector(".btn-sm");
+  var orig=btn.innerHTML;btn.textContent=msg;
+  setTimeout(function(){btn.innerHTML=orig},1200);
+}
+</script></body></html>
