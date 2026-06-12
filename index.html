@@ -1,0 +1,1549 @@
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Targeted Wordlist Generator</title><style>
+*,::after,::before{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1012;--surface:#17181c;--surface2:#1e2026;--surface3:#26282f;--text:#e8e6e1;--text2:#9a9890;--text3:#5c5a55;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);--accent:#39e07a;--accent-dim:#1a4a32;--accent-text:#0a1f14;--warn:#f5a623;--warn-dim:#3a2800;--red:#e05555;--red-dim:#3a1515;--radius:7px;--radius-lg:11px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--mono:"SF Mono","Fira Code","Consolas",monospace}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:20px;font-weight:500;display:flex;align-items:center;gap:10px;margin-bottom:3px}
+h1 svg{opacity:.5}
+.sub{font-size:13px;color:var(--text2);margin-bottom:2rem}
+.sub span{color:var(--accent);opacity:.8}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+.layout>div{display:flex;flex-direction:column}
+.layout>div>.panel:last-child{flex:1}
+@media(max-width:700px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:16px}
+.panel-title{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:7px}
+.panel-title-left{display:flex;align-items:center;gap:7px}
+.panel-title svg{opacity:.6}
+label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;margin-top:10px}
+label:first-of-type{margin-top:0}
+input[type=number],input[type=text],select,textarea{width:100%;font-size:13px;padding:7px 10px;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);outline:0;font-family:var(--font);transition:border-color .13s}
+input[type=number]:focus,input[type=text]:focus,select:focus,textarea:focus{border-color:var(--accent);outline:0}
+input[type=file]{width:100%;font-size:12px;padding:6px 10px;border:.5px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text2);cursor:pointer}
+input[type=file]::file-selector-button{background:var(--surface3);color:var(--text);border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;margin-right:8px}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+textarea{resize:vertical;min-height:70px;font-family:var(--mono);font-size:12px;line-height:1.5}
+select option{background:var(--surface2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;align-items:stretch}
+.toggle-grid .toggle{margin-top:0!important;margin-bottom:0!important}
+.toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border:.5px solid var(--border);border-radius:var(--radius);cursor:pointer;user-select:none;transition:border-color .13s,background .13s;font-size:11px;color:var(--text2);height:36px;overflow:hidden}
+.toggle:hover{border-color:var(--border2);color:var(--text)}
+.toggle.on{border-color:var(--accent-dim);background:rgba(57,224,122,.06);color:var(--text);font-weight:normal}
+.toggle input{display:none}
+.tog-box{width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .13s}
+.toggle.on .tog-box{background:var(--accent);border-color:var(--accent)}
+.tog-check{display:none}
+.toggle.on .tog-check{display:block}
+.leet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px;margin-top:6px}
+.leet-pair{display:flex;align-items:center;gap:4px;font-size:12px;background:var(--surface2);border:.5px solid var(--border);border-radius:var(--radius);padding:4px 7px}
+.leet-char{font-family:var(--mono);color:var(--accent);font-weight:500;min-width:12px}
+.leet-arr{color:var(--text3);font-size:10px}
+.leet-sub{font-family:var(--mono);color:var(--text2)}
+.btn-generate{width:100%;padding:11px;font-size:14px;font-weight:500;border:none;border-radius:var(--radius-lg);cursor:pointer;background:var(--accent);color:var(--accent-text);font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;margin-top:16px}
+.btn-generate:hover{opacity:.88}
+.btn-generate:disabled{opacity:.35;cursor:default}
+.output-panel{background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-lg);margin-top:16px;overflow:hidden}
+.output-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--border)}
+.output-title{font-size:12px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:8px}
+.word-count{background:var(--accent-dim);color:var(--accent);font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px}
+.output-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-sm{padding:5px 13px;font-size:12px;font-weight:500;border:.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surface2);color:var(--text);font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .13s}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm.dl{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.btn-sm.dl:hover{background:var(--accent);color:var(--accent-text)}
+.output-area{font-family:var(--mono);font-size:12px;line-height:1.6;padding:14px 16px;max-height:340px;overflow-y:auto;color:var(--text);white-space:pre-wrap;word-break:break-all;background:var(--bg)}
+.filter-strip{display:flex;gap:8px;align-items:center;padding:10px 16px;border-bottom:.5px solid var(--border);flex-wrap:wrap}
+.filter-strip label{font-size:12px;color:var(--text2);white-space:nowrap}
+.filter-strip input[type=number]{width:68px}
+.filter-strip input[type=text]{flex:1;min-width:120px}
+.filter-strip select{width:auto;font-size:12px;padding:5px 8px}
+.prog-bar-bg{height:3px;background:var(--surface3)}
+.prog-bar-fill{height:100%;background:var(--accent);width:0%;transition:width .4s}
+.warn-box{background:var(--warn-dim);border:.5px solid var(--warn);border-radius:var(--radius);padding:9px 13px;font-size:12px;color:var(--warn);margin-top:10px;display:none}
+.limit-box{background:var(--red-dim);border:.5px solid var(--red);border-radius:var(--radius);padding:9px 13px;font-size:12px;color:var(--red);margin-top:10px;display:none}
+.estimate-bar{background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--radius);padding:10px 13px;font-size:12px;color:var(--text2);margin-top:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.estimate-bar strong{color:var(--text);font-weight:500}
+.estimate-bar .est-warn{color:var(--warn);display:none}
+.estimate-bar .est-block{color:var(--red);display:none}
+.btn-gen-anyway{padding:5px 13px;font-size:12px;font-weight:500;border:.5px solid var(--warn);border-radius:var(--radius);cursor:pointer;background:var(--warn-dim);color:var(--warn);font-family:var(--font);display:none;white-space:nowrap}
+.btn-gen-anyway:hover{background:var(--warn);color:#000}
+.advanced-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 13px;background:var(--red-dim);border:.5px solid var(--red);border-radius:var(--radius);display:none}
+.advanced-row label{margin:0;color:var(--red);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.advanced-row input[type=checkbox]{width:auto;accent-color:var(--red)}
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.stat-pill{background:var(--surface2);border:.5px solid var(--border);border-radius:var(--radius);padding:6px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.stat-pill strong{color:var(--text);font-weight:500}
+/* profile save/load */
+.profile-bar{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.btn-xs{padding:4px 10px;font-size:11px;font-weight:500;border:.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surface2);color:var(--text2);font-family:var(--font);transition:all .13s}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent)}
+.btn-xs.save{border-color:var(--accent-dim);color:var(--accent)}
+.saved-profiles{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.profile-chip{padding:3px 9px;font-size:11px;border:.5px solid var(--border2);border-radius:20px;cursor:pointer;background:var(--surface2);color:var(--text2);display:flex;align-items:center;gap:5px;transition:all .13s}
+.profile-chip:hover{border-color:var(--accent);color:var(--text)}
+.profile-chip .del{color:var(--text3);font-size:10px;margin-left:2px}
+.profile-chip .del:hover{color:var(--red)}
+footer{text-align:center;margin-top:3rem;font-size:12px;color:var(--text3)}
+</style></head><body><div class="wrap">
+
+<h1><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 12h4"/></svg>Targeted wordlist generator</h1>
+<p class="sub">Generate targeted wordlists from personal data — built for <span>hash cracking,</span> <span>pentesting,</span> and <span>CTF challenges.</span></p>
+
+<div class="layout">
+
+<!-- LEFT COLUMN -->
+<div>
+  <div class="panel">
+    <div class="panel-title">
+      <div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Person profile</div>
+    </div>
+    <div class="row2">
+      <div><label>First name</label><input type="text" id="p-first" placeholder="e.g. john" oninput="updateEstimate()"></div>
+      <div><label>Last name</label><input type="text" id="p-last" placeholder="e.g. smith" oninput="updateEstimate()"></div>
+    </div>
+    <div class="row2">
+      <div><label>Nickname / username</label><input type="text" id="p-nick" placeholder="e.g. johnny" oninput="updateEstimate()"></div>
+      <div><label>Date of birth</label><input type="text" id="p-dob" placeholder="15/06/1990, 1990-06-15, 15 Jun 1990…" oninput="showDobHint(this);updateEstimate()"><div id="dob-hint" style="font-size:11px;color:var(--accent);margin-top:3px"></div></div>
+    </div>
+    <div class="row2">
+      <div><label>Partner name</label><input type="text" id="p-partner" placeholder="e.g. sarah" oninput="updateEstimate()"></div>
+      <div><label>Pet name</label><input type="text" id="p-pet" placeholder="e.g. rex" oninput="updateEstimate()"></div>
+    </div>
+    <div class="row2">
+      <div><label>Company / org</label><input type="text" id="p-company" placeholder="e.g. acme" oninput="updateEstimate()"></div>
+      <div><label>City / location</label><input type="text" id="p-city" placeholder="e.g. london" oninput="updateEstimate()"></div>
+    </div>
+    <label>Keywords (one per line or comma-separated)</label>
+    <textarea id="p-keywords" placeholder="e.g. football, arsenal, guitar, admin, password" oninput="updateEstimate()"></textarea>
+    <div class="row2">
+      <div><label>Phone number digits (last 4 used)</label><input type="text" id="p-phone" placeholder="e.g. 07912345678" oninput="updateEstimate()"></div>
+      <div><label>Email address</label><input type="text" id="p-email" placeholder="e.g. john.smith@gmail.com" oninput="updateEstimate()"></div>
+    </div>
+    <!-- SAVE/LOAD PROFILES -->
+    <div class="profile-bar">
+      <button class="btn-xs save" onclick="saveProfile()">&#43; Save profile</button>
+      <button class="btn-xs" onclick="clearProfile()">Clear</button>
+    </div>
+    <div class="saved-profiles" id="saved-profiles"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Custom word import</div></div>
+    <label>Paste extra words (one per line)</label>
+    <textarea id="p-custom" placeholder="Paste any additional base words here..." style="min-height:70px" oninput="updateEstimate()"></textarea>
+    <label>Upload wordlist file (.txt)</label>
+    <input type="file" id="p-file" accept=".txt" onchange="loadWordFile(this)">
+  </div>
+</div>
+
+<!-- RIGHT COLUMN -->
+<div>
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Mutations</div></div>
+    <div class="toggle-grid" id="mutation-toggles">
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Case variations</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Leet speak</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Common suffixes</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Date permutations</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Word combinations</label>
+      <label class="toggle on" onclick="tog(this);return false;"><input type="checkbox" checked><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Reverse words</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Common prefixes</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Symbol wrapping</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Keyboard walks</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Double word</label>
+      <label class="toggle" onclick="tog(this);return false;"><input type="checkbox"><span class="tog-box"><svg class="tog-check" width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#0a1f14" stroke-width="2" stroke-linecap="round"/></svg></span>Year range</label>
+    </div>
+    <!-- Year range inputs -->
+    <div id="year-range-opts" style="display:none;margin-top:8px">
+      <div class="row2">
+        <div><label>From year</label><input type="number" id="yr-from" value="2000" min="1900" max="2099" oninput="clampYearRange();updateEstimate()"></div>
+        <div><label>To year</label><input type="number" id="yr-to" value="2026" min="1900" max="2099" oninput="clampYearRange();updateEstimate()"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Leet substitutions</div></div>
+    <div class="leet-grid" id="leet-display"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>Output filters</div></div>
+    <div class="row3">
+      <div><label>Min length</label><input type="number" id="f-min" value="6" min="1" max="32"></div>
+      <div><label>Max length</label><input type="number" id="f-max" value="20" min="1" max="64"></div>
+      <div><label>Max words</label><input type="number" id="f-limit" value="100000" min="100" max="1000000" oninput="updateEstimate()"></div>
+    </div>
+    <label>Must contain (optional)</label>
+    <input type="text" id="f-must" placeholder="e.g. 2024 — leave blank for all">
+    <div id="warn-box" class="warn-box">Large wordlist — may take a moment to generate.</div>
+    <div id="limit-box" class="limit-box">Word limit reached — increase max words or narrow inputs.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><div class="panel-title-left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Custom suffixes &amp; prefixes</div></div>
+    <div class="row2">
+      <div>
+        <label>Extra suffixes (comma-separated)</label>
+        <input type="text" id="c-suffixes" placeholder="e.g. 2025,!@,#1,xyz">
+      </div>
+      <div>
+        <label>Extra prefixes (comma-separated)</label>
+        <input type="text" id="c-prefixes" placeholder="e.g. super,old,new">
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<button class="btn-generate" id="btn-gen" onclick="generate()">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+  Generate wordlist
+</button>
+
+<!-- Estimate + warning banner -->
+<div class="estimate-bar" id="estimate-bar">
+  <span>Estimated output: <strong id="est-count">—</strong></span>
+  <span style="color:var(--text3);font-size:11px" id="est-hint">Fill in profile fields to see an estimate</span>
+  <span class="est-warn" id="est-warn">⚠ Large generation — may take several seconds.</span>
+  <span class="est-block" id="est-block">⚠ Estimated output exceeds 1,000,000 candidates. Enable Advanced Mode below to continue.</span>
+  <button class="btn-gen-anyway" id="btn-gen-anyway" onclick="generateAnyway()">Generate anyway</button>
+</div>
+
+<!-- Advanced mode (hidden until needed) -->
+<div class="advanced-row" id="advanced-row">
+  <label><input type="checkbox" id="advanced-mode" onchange="onAdvancedToggle()"> Advanced Mode — generating extremely large wordlists may consume significant memory and cause browser slowdowns.</label>
+</div>
+
+<div id="stats-row" class="stats-row" style="display:none"></div>
+
+<div class="output-panel" id="output-panel" style="display:none">
+  <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill"></div></div>
+  <div class="output-header">
+    <div class="output-title">Generated wordlist <span class="word-count" id="word-count">0 words</span></div>
+    <div class="output-actions">
+      <button class="btn-sm" onclick="copyAll()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+      <button class="btn-sm dl" onclick="downloadList()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download .txt</button>
+    </div>
+  </div>
+  <div class="filter-strip">
+    <label>Min</label><input type="number" id="live-min" value="6" min="1" max="64" style="width:56px" oninput="applyLiveFilter()">
+    <label>Max</label><input type="number" id="live-max" value="20" min="1" max="64" style="width:56px" oninput="applyLiveFilter()">
+    <label>Search</label><input type="text" id="live-search" placeholder="filter preview..." oninput="applyLiveFilter()">
+    <label>Sort</label>
+    <select id="live-sort" onchange="applyLiveFilter()" style="width:auto;font-size:12px;padding:5px 8px">
+      <option value="default">Default</option>
+      <option value="prob">High probability first</option>
+      <option value="alpha">A–Z</option>
+      <option value="alpha-desc">Z–A</option>
+      <option value="length">Shortest first</option>
+      <option value="length-desc">Longest first</option>
+      <option value="shuffle">Shuffle</option>
+    </select>
+    <label style="margin-left:auto;color:var(--text3)" id="showing-lbl"></label>
+  </div>
+  <div class="output-area" id="output-area"></div>
+</div>
+
+<footer>Targeted Wordlist Generator &mdash; runs entirely in your browser, nothing is sent anywhere.</footer>
+</div>
+
+<script>
+var LEET={a:["@","4"],e:["3"],i:["1","!"],o:["0"],s:["$","5"],t:["7"],g:["9"],b:["8"],l:["1"]};
+
+// ── Reverse leet map: symbol/digit → alpha (built from LEET)
+var LEET_REVERSE=(function(){
+  var r={};
+  Object.keys(LEET).forEach(function(alpha){
+    LEET[alpha].forEach(function(sym){if(!r[sym])r[sym]=alpha});
+  });
+  return r;
+})();
+
+// Decode leet-encoded string back to alpha: "j0hn"→"john", "@dm1n"→"admin"
+function reverseLeet(s){
+  var out="";
+  for(var i=0;i<s.length;i++)out+=LEET_REVERSE[s[i]]||s[i];
+  return out.toLowerCase();
+}
+
+// ── Email address parser
+// "john.smith99@gmail.com" → john, smith, johnsmith, smith99, john99, 99, j.smith, js
+function parseEmail(raw){
+  if(!raw||!raw.trim())return[];
+  var out=new Set;
+  var s=raw.trim().toLowerCase();
+  var atIdx=s.indexOf("@");
+  if(atIdx<1)return[];
+  var local=s.slice(0,atIdx);
+  var domain=s.slice(atIdx+1);
+  // Full local part
+  out.add(local);
+  // Split on separators: . _ - +
+  var parts=local.split(/[.\-_+]+/).filter(function(p){return p.length>0});
+  parts.forEach(function(p){out.add(p)});
+  if(parts.length>1){
+    out.add(parts.join(""));                       // johnsmith99
+    out.add(parts.filter(function(p){return isNaN(p)}).join("")); // johnsmith (no numbers)
+    out.add(parts[0][0]+parts.slice(1).join("")); // jsmith99 style
+    if(parts.length>=2)out.add(parts[0][0]+parts[1]); // jsmith
+  }
+  // Reverse leet on local and each part
+  var decoded=reverseLeet(local);
+  if(decoded!==local){
+    out.add(decoded);
+    decoded.split(/[.\-_+]+/).forEach(function(p){if(p.length>0)out.add(p)});
+  }
+  parts.forEach(function(p){var d=reverseLeet(p);if(d!==p&&d.length>0)out.add(d)});
+  // Trailing digit split on each part: smith99 → smith, 99
+  parts.forEach(function(p){
+    var m=p.match(/^([a-z]+)(\d+)$/);
+    if(m){out.add(m[1]);out.add(m[2]);if(/^\d{2}$/.test(m[2])){out.add("19"+m[2]);out.add("20"+m[2])}}
+    var m2=p.match(/^(\d+)([a-z]+)$/);
+    if(m2){out.add(m2[1]);out.add(m2[2])}
+  });
+  // Custom domain (non-consumer) → probably company, add it
+  var knownProviders=new Set(["gmail","yahoo","hotmail","outlook","icloud","protonmail","mail","live","msn","aol","ymail","googlemail","btinternet","sky","virginmedia","talktalk","ntlworld"]);
+  var domainParts=domain.split(".");
+  if(!knownProviders.has(domainParts[0])){
+    out.add(domainParts[0]);
+    // Abbreviation of domain
+    if(domainParts[0].length>4)out.add(domainParts[0].slice(0,3));
+  }
+  return Array.from(out).filter(function(v){return v.length>0});
+}
+
+// ── Password probability scorer (used for "High probability first" sort)
+// Pure structural heuristic — no external data. Higher = more password-like.
+var _probBases=[];
+var _probCache={};
+function initProbScorer(bases){_probBases=bases.map(function(b){return b.toLowerCase()});_probCache={}}
+function scoreWord(w){
+  if(_probCache[w]!==undefined)return _probCache[w];
+  var s=w.toLowerCase();
+  var score=0;
+  // Contains a profile base token
+  for(var i=0;i<_probBases.length;i++){
+    var b=_probBases[i];if(b.length<3)continue;
+    if(s===b)score+=60;
+    else if(s.startsWith(b)||s.endsWith(b))score+=30;
+    else if(s.indexOf(b)>-1)score+=12;
+    if(score>60)break;
+  }
+  // Length sweet-spot
+  if(w.length>=7&&w.length<=12)score+=15;
+  else if(w.length>=6&&w.length<=16)score+=5;
+  else if(w.length<6)score-=25;
+  // Title case (most common human pattern)
+  if(/^[A-Z][a-z]/.test(w))score+=18;
+  // Ends with digits
+  if(/\d+$/.test(s))score+=12;
+  // Ends with 2- or 4-digit year
+  if(/(?:19|20)\d{2}$/.test(s))score+=10;
+  if(/\d{2}$/.test(s))score+=6;
+  // Ends with symbol
+  if(/[!@#$*]$/.test(s))score+=10;
+  // Ends with digit(s) then symbol
+  if(/\d+[!@#$]$/.test(s))score+=14;
+  // Has leet chars (suggests deliberate obfuscation, common)
+  if(/[@34!05$7]/.test(s))score+=6;
+  // Pure lower (common baseline)
+  if(w===w.toLowerCase())score+=4;
+  _probCache[w]=score;
+  return score;
+}
+
+// ── Leet display
+(function(){
+  var n=document.getElementById("leet-display");
+  Object.keys(LEET).forEach(function(t){LEET[t].forEach(function(e){n.innerHTML+='<div class="leet-pair"><span class="leet-char">'+t+'</span><span class="leet-arr">\u2192</span><span class="leet-sub">'+e+"</span></div>"})});
+})();
+
+// ── Year range toggle visibility
+document.querySelectorAll("#mutation-toggles .toggle")[10].addEventListener("click",function(){
+  setTimeout(function(){
+    var on=document.querySelectorAll("#mutation-toggles .toggle")[10].classList.contains("on");
+    document.getElementById("year-range-opts").style.display=on?"block":"none";
+  },0);
+});
+
+function tog(e){e.classList.toggle("on");e.querySelector("input").checked=e.classList.contains("on");updateEstimate()}
+function isOn(e){return document.querySelectorAll("#mutation-toggles .toggle")[e].classList.contains("on")}
+
+var SUFFIXES=["1","2","12","21","123","1234","12345","007","69","99","00","!","!!","#","@","$","*",".","2024","2023","2022","2021","2020","2019","2018","01","02","1!","123!","1234!","!1","@1","#1","pw","pass","pwd","admin","root","login"];
+var PREFIXES=["the","my","mr","ms","dr","@","!","1","123","_","00"];
+var SYMBOLS=["!","@","#","$","*","_",".","?"];
+var KEYBOARD_WALKS=["qwerty","asdf","zxcv","qweasd","1234qwer","qazwsx","zxcvbn","asdfgh","qwerty123","asdfghjkl"];
+
+function caseVariants(e){var t=new Set;t.add(e.toLowerCase());t.add(e.toUpperCase());t.add(e[0].toUpperCase()+e.slice(1).toLowerCase());var n="";for(var o=0;o<e.length;o++)n+=o%2==0?e[o].toUpperCase():e[o].toLowerCase();t.add(n);return Array.from(t)}
+
+function leetVariants(t){var n=[t=t.toLowerCase()];for(var o=0;o<t.length;o++){var e=t[o];LEET[e]&&LEET[e].forEach(function(e){n.push(t.slice(0,o)+e+t.slice(o+1))})}var a="";for(var r=0;r<t.length;r++)a+=LEET[t[r]]?LEET[t[r]][0]:t[r];if(a!==t)n.push(a);return n}
+
+// ═══════════════════════════════════════════════════════════
+//  SMART PARSING ENGINE
+// ═══════════════════════════════════════════════════════════
+
+// Phonetic near-matches for common English first names
+var PHONETIC_MAP={
+  john:["jon","johnny","johny","jhn"],jonathan:["jon","jonny","jono","nathan"],
+  james:["jim","jimmy","jamie","jas"],william:["will","wil","bill","billy","willy","liam"],
+  robert:["rob","bob","bobby","robbie","bert"],richard:["rich","rick","ricky","dick","richie"],
+  michael:["mike","mikey","mick","mickey","micky"],david:["dave","davy","dav"],
+  thomas:["tom","tommy","thom"],daniel:["dan","danny","dani"],
+  matthew:["matt","matty","mat"],
+  andrew:["andy","drew","andi"],joseph:["joe","joey","jo"],
+  charles:["charlie","chuck","chas","carl"],george:["georgie","geo"],
+  edward:["ed","eddie","ned","ted","teddy"],henry:["harry","hank","hal"],
+  nicholas:["nick","nicky","nic","nicolas"],anthony:["tony","ant","anth"],
+  alexander:["alex","lex","xander","alec"],benjamin:["ben","benny","benji"],
+  samuel:["sam","sammy"],joshua:["josh"],ryan:["ry"],
+  elizabeth:["liz","lizzy","beth","eliza","ellie","lisa","bess","betty","libby"],
+  katherine:["kate","katy","kathy","kat","cathy","cate","kath","kathryn","catherine"],
+  margaret:["maggie","meg","peggy","marge","margie","rita"],
+  jennifer:["jen","jenny","jenn"],jessica:["jess","jessie"],
+  sarah:["sara","sadie","sally"],emily:["em","emma","emmy"],
+  victoria:["vicky","vic","vikki","tori"],stephanie:["steph","stevie"],
+  samantha:["sam","sammie","sami"],alexandra:["alex","lexi","sandra","alexa"],
+  charlotte:["charlie","lottie","charli"],rebecca:["becca","becky","reba","bex"],
+  amanda:["mandy","amy"],melissa:["mel","missy"],
+  patricia:["pat","patty","tricia","trish"],barbara:["barb","babs"],
+  susan:["sue","suzy","suzie"],
+  christopher:["chris","topher","kris"],stephen:["steve","stevie","ste"],
+  timothy:["tim","timmy"],peter:["pete","petey"],
+  patrick:["pat","paddy"],simon:["si"],
+  nathan:["nate","nat"],adam:["ad"],
+  jake:["jacob","jay","jak"],jack:["jj","jacky"],
+  harry:["harold","haz"],charlie:["charles","chas"],
+  // UK-common
+  alfie:["alf","alfred"],archie:["arch"],freddie:["fred","frederick"],
+  theo:["theodore"],ollie:["oliver","oli"],georgie:["george"]
+};
+
+// Common name prefixes/particles to keep as-is (not strip)
+var NAME_PARTICLES=["van","de","der","von","la","le","del","della","di","du","al","el","bin","binti","mc","mac","o"];
+
+// Legal/org suffixes to strip from company names
+var LEGAL_SUFFIXES=["ltd","limited","llc","llp","inc","corp","corporation","plc","gmbh","ag","sa","bv","nv","pty","co","company","group","holdings","international","intl","uk","us","global","solutions","services","technologies","tech","consulting","associates","partners","ventures","capital"];
+
+// City suffix patterns to strip for core word
+var CITY_SUFFIXES_RE=/(?:[-\s](?:upon|on|sub|super|under|over|le|la|de|en|bei|am|an|by|cum|next|near|juxta|in|the|sea|avon|wye|trent|thames|exe|severn|humber|mersey|forth|clyde|dee|nene|ouse|aire|don|tees|wear|tyne|tweed|lyn|bury|borough|brough|ford|wick|ton|ham|stead|worth|field|thorpe|by|thwaite|holme|hurst|shaw|wood|leigh|pool|mouth|bridge|gate|hill|bank|moor|dale|vale|glen|kirk|stow|minster|chester|caster|cester|ster|wich|wich|port|haven|bay|croft|holt|grove|dene|dean|cliffe|cliff|den|den))+$/i;
+
+// Known city abbreviations
+var CITY_ABBREVS={
+  "new york":["ny","nyc"],"new york city":["ny","nyc"],"los angeles":["la"],"san francisco":["sf","frisco"],
+  "london":["ldn","lon"],"manchester":["mcr","manc"],"birmingham":["brum"],
+  "liverpool":["lfc","scouse"],"glasgow":["glas"],"edinburgh":["edi","edin"],
+  "leeds":["leed"],"sheffield":["sheff","sheffy"],"bristol":["bris"],
+  "nottingham":["notts"],"leicester":["leics","leic"],"coventry":["cov"],
+  "stoke":["stoke"],"wolverhampton":["wolves","wolvo"],"southampton":["soton"],
+  "portsmouth":["pompey"],"newcastle":["newc","toon"],"sunderland":["sund"],
+  "middlesbrough":["boro","midds"],"cardiff":["diff"],"swansea":["swan"],
+  "belfast":["belf"],"dubai":["dxb"],"toronto":["tor"],"sydney":["syd"],
+  "melbourne":["melb"],"chicago":["chi"],"houston":["htx"],"phoenix":["phx"],
+  "philadelphia":["philly","phl"],"dallas":["dal"],"detroit":["det"],
+  "denver":["den"],"seattle":["sea"],"boston":["bos"],"miami":["mia"],
+  "atlanta":["atl"],"minneapolis":["mpls"],"portland":["pdx"]
+};
+
+function expandYear(yr2){return parseInt(yr2)>30?"19"+yr2:"20"+yr2}
+
+function smartParseDOB(raw){
+  if(!raw||!raw.trim())return null;
+  var s=raw.trim();
+  var MONTHS={jan:"01",feb:"02",mar:"03",apr:"04",may:"05",jun:"06",jul:"07",aug:"08",
+    sep:"09",oct:"10",nov:"11",dec:"12",january:"01",february:"02",march:"03",
+    april:"04",june:"06",july:"07",august:"08",september:"09",october:"10",
+    november:"11",december:"12"};
+  var d,m,y;
+  var iso=s.match(/^(\d{4})[\-\/\. ](\d{1,2})[\-\/\. ](\d{1,2})$/);
+  if(iso){y=iso[1];m=iso[2].padStart(2,"0");d=iso[3].padStart(2,"0");return{d:d,m:m,y:y}}
+  var dmy=s.match(/^(\d{1,2})[\-\/\. ](\d{1,2})[\-\/\. ](\d{2,4})$/);
+  if(dmy){d=dmy[1].padStart(2,"0");m=dmy[2].padStart(2,"0");var yr=dmy[3];y=yr.length===2?expandYear(yr):yr;return{d:d,m:m,y:y}}
+  var run8=s.match(/^(\d{8})$/);
+  if(run8){var r=run8[1];var yr4=parseInt(r.slice(0,4));if(yr4>1900&&yr4<2100){y=r.slice(0,4);m=r.slice(4,6);d=r.slice(6,8)}else{d=r.slice(0,2);m=r.slice(2,4);y=r.slice(4,8)};return{d:d,m:m,y:y}}
+  var wrd=s.replace(/[,\.]/g,"").split(/\s+/);
+  if(wrd.length>=3){
+    var mn=MONTHS[wrd[0].toLowerCase()];
+    if(mn){m=mn;d=wrd[1].replace(/\D/g,"").padStart(2,"0");var y2=wrd[2];y=y2.length===2?expandYear(y2):y2;return{d:d,m:m,y:y}}
+    var mn2=MONTHS[wrd[1].toLowerCase()];
+    if(mn2){m=mn2;d=wrd[0].replace(/\D/g,"").padStart(2,"0");var y3=wrd[2];y=y3.length===2?expandYear(y3):y3;return{d:d,m:m,y:y}}
+    // "1990 June 15" style
+    if(wrd[0].length===4&&parseInt(wrd[0])>1900){var mn3=MONTHS[wrd[1].toLowerCase()];if(mn3){y=wrd[0];m=mn3;d=wrd[2].replace(/\D/g,"").padStart(2,"0");return{d:d,m:m,y:y}}}
+  }
+  // "15th June 1990" - strip ordinal suffixes
+  var ordinal=s.replace(/(\d+)(?:st|nd|rd|th)/gi,"$1");
+  if(ordinal!==s)return smartParseDOB(ordinal);
+  var n=s.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+  if(n){d=n[1].padStart(2,"0");m=n[2].padStart(2,"0");var yr5=n[3];y=yr5.length===2?expandYear(yr5):yr5;return{d:d,m:m,y:y}}
+  // Compact mixed: "Jun15", "15Jun", "Jun1590", "15Jun90", "Jun152000"
+  var compactMD=s.match(/^([a-z]{3,})(\d{1,2})(\d{2,4})?$/i);
+  if(compactMD){var cmn=MONTHS[compactMD[1].toLowerCase()];if(cmn){m=cmn;d=compactMD[2].padStart(2,"0");y=compactMD[3]?(compactMD[3].length===2?expandYear(compactMD[3]):compactMD[3]):"";return{d:d,m:m,y:y}}}
+  var compactDM=s.match(/^(\d{1,2})([a-z]{3,})(\d{2,4})?$/i);
+  if(compactDM){var cdmn=MONTHS[compactDM[2].toLowerCase()];if(cdmn){m=cdmn;d=compactDM[1].padStart(2,"0");y=compactDM[3]?(compactDM[3].length===2?expandYear(compactDM[3]):compactDM[3]):"";return{d:d,m:m,y:y}}}
+  // YearMonth: "1990Jun", "1990June"
+  var compactYM=s.match(/^(\d{4})([a-z]{3,})(\d{1,2})?$/i);
+  if(compactYM){var cymn=MONTHS[compactYM[2].toLowerCase()];if(cymn){y=compactYM[1];m=cymn;d=compactYM[3]?compactYM[3].padStart(2,"0"):"01";return{d:d,m:m,y:y}}}
+  return null;
+}
+
+var MONTH_NAMES=["","january","february","march","april","may","june","july","august","september","october","november","december"];
+var MONTH_SHORT=["","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+
+function datePerms(raw){
+  var seen=new Set;
+  var t=[];
+  function add(v){if(v&&v.length>0&&!seen.has(v)){seen.add(v);t.push(v)}}
+  var p=smartParseDOB(raw);
+  if(!p)return t;
+  var d=p.d,m=p.m,y=p.y,y2=p.y.slice(-2);
+  var di=parseInt(d),mi=parseInt(m);
+  var dNoPad=String(di),mNoPad=String(mi);
+  var mName=MONTH_NAMES[mi]||"";
+  var mShort=MONTH_SHORT[mi]||"";
+  // Numeric combos
+  [d+m+y,d+m+y2,m+d+y,m+d+y2,y+m+d,y+d+m,d+m,m+d,y,y2,d,m,
+   dNoPad+mNoPad+y,dNoPad+mNoPad+y2,
+   d+"/"+m+"/"+y,m+"/"+d+"/"+y,y+"-"+m+"-"+d,
+   d+"."+m+"."+y,d+"-"+m+"-"+y,
+   d+y2,m+y2,d+y,m+y,y2+d,y2+m,
+   dNoPad+y2,mNoPad+y2
+  ].forEach(add);
+  // Month name + numeric variants
+  if(mName){
+    [mName,mShort,mName+y,mName+y2,mShort+y,mShort+y2,y+mName,y2+mName,
+     d+mName,dNoPad+mName,d+mShort,dNoPad+mShort,
+     mName+d,mName+dNoPad,mShort+d,mShort+dNoPad,
+     d+mName,dNoPad+mName,d+mShort,dNoPad+mShort,
+     mName+d+y,mName+d+y2,mShort+d+y,mShort+d+y2,
+     d+mName+y,dNoPad+mName+y,d+mName+y2,dNoPad+mName+y2
+    ].forEach(add);
+  }
+  return t;
+}
+
+// ── Keyword / text parsing
+var NOISE_WORDS=new Set(["the","a","an","and","or","of","in","at","to","for","my","our","your","is","was","i","me","we","it","its","this","that","with","on","by","as","be","am","are","have","has"]);
+
+function splitCamelCase(s){return s.replace(/([a-z])([A-Z])/g,"$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g,"$1 $2").toLowerCase().split(/\s+/).filter(function(w){return w.length>0})}
+
+// Dictionary for compound-username splitting: "shadowking" -> ["shadow","king"]
+var DICT_WORDS=["shadow","light","dark","king","queen","prince","princess","knight","dragon","phoenix","wolf","tiger","lion","bear","eagle","hawk","fox","panther","cobra","viper","shark","raven","falcon","ghost","demon","angel","devil","reaper","ninja","samurai","pirate","viking","wizard","mage","witch","rogue","assassin","sniper","gunner","soldier","captain","chief","boss","lord","baron","duke","master","slave","alpha","omega","neo","cyber","tech","code","byte","pixel","blade","sword","shield","arrow","spear","hammer","axe","storm","thunder","lightning","frost","flame","blaze","fire","ice","star","moon","sun","sky","night","day","cloud","rain","snow","wind","earth","stone","rock","steel","iron","gold","silver","bronze","crystal","diamond","ruby","jade","pearl","blue","red","green","black","white","purple","orange","crimson","silver","golden","royal","super","mega","ultra","hyper","epic","legend","legendary","hero","villain","champion","warrior","hunter","slayer","killer","ranger","rider","runner","walker","gamer","player","pro","elite","prime","apex","zero","one","first","last","true","real","fake","wild","crazy","mad","cool","hot","cold","fast","slow","big","small","tiny","giant","mini","max","love","life","death","time","fate","destiny","dream","nightmare","soul","heart","mind","brain","spirit","body","blood","bone","skull","cat","dog","bird","snake","spider","mouse","rabbit","horse","puppy","kitten","monkey","panda","koala","zebra","rose","lily","daisy","oak","pine","forest","jungle","desert","ocean","river","lake","mountain","valley","island","kingdom","empire","castle","tower","temple","city","town","village","world","planet","galaxy","universe","space","robot","machine","mecha","circuit","laser","plasma","nova","comet","meteor","rocket","ship","pilot","driver","racer","speed","power","force","energy","magic","spell","curse","potion","sword","gun","pistol","rifle","tank","jet","plane"];
+var DICT_SET=new Set(DICT_WORDS);
+function splitCompoundWord(w){
+  if(w.length<6||w.length>24)return null;
+  function helper(s){
+    if(s.length===0)return[];
+    var maxLen=Math.min(s.length,10);
+    for(var i=maxLen;i>=3;i--){
+      var head=s.slice(0,i);
+      if(DICT_SET.has(head)){
+        var rest=helper(s.slice(i));
+        if(rest!==null)return[head].concat(rest);
+      }
+    }
+    return null;
+  }
+  var result=helper(w);
+  if(result&&result.length>=2)return result;
+  return null;
+}
+
+function parseWords(e){
+  var rawOriginal=e.split(/[\n,;|\/\\\t\r]+/).map(function(w){return w.trim().replace(/^["'\`\s]+|["'\`\s]+$/g,"")}).filter(function(w){return w.length>0});
+  var raw=rawOriginal.map(function(w){return w.toLowerCase()});
+  var out=new Set;
+  rawOriginal.forEach(function(orig,idx){
+    var w=raw[idx];
+    if(NOISE_WORDS.has(w)&&w.length<=3)return;
+    out.add(w);
+    // Split snake_case and kebab-case
+    if(/[_\-]/.test(w)){w.split(/[_\-]/).forEach(function(p){if(p.length>1&&!NOISE_WORDS.has(p))out.add(p)})}
+    // Split camelCase / PascalCase — check ORIGINAL case (was checking lowercased w, so this never fired)
+    if(/[a-z][A-Z]|[A-Z]{2,}[a-z]/.test(orig)){splitCamelCase(orig).forEach(function(p){if(p.length>1&&!NOISE_WORDS.has(p))out.add(p)})}
+    // If word has trailing digits, split: "admin123" → "admin","123"
+    var trailDigits=w.match(/^([a-z]+)(\d+)$/);
+    if(trailDigits&&trailDigits[1].length>1){out.add(trailDigits[1]);out.add(trailDigits[2])}
+    // Extract all embedded digit sequences — years (4-digit 19xx/20xx) and short numbers
+    var allNums=w.match(/\d+/g);
+    if(allNums){allNums.forEach(function(n){
+      out.add(n);
+      // 4-digit year → also add 2-digit version: 1990 → 90
+      if(/^(19|20)\d{2}$/.test(n))out.add(n.slice(-2));
+      // 2-digit number → also add plausible 4-digit year expansions: 90 → 1990, 2090
+      if(/^\d{2}$/.test(n)){out.add("19"+n);out.add("20"+n)}
+    })}
+    // Extract embedded year patterns from mixed strings like "born1990","since2015","class_of_99"
+    var embeddedYear=w.match(/(19|20)(\d{2})/);
+    if(embeddedYear){out.add(embeddedYear[0]);out.add(embeddedYear[2])}
+    // Reverse leet decode on the raw token: "j0hn" → "john", "@dm1n" → "admin"
+    var rlDec=reverseLeet(w);
+    if(rlDec!==w&&rlDec.length>1&&!NOISE_WORDS.has(rlDec))out.add(rlDec);
+    // Compound-word splitting for unsegmented strings: "shadowking" → "shadow","king"
+    if(w.length>=6&&!/\d/.test(w)){
+      var compound=splitCompoundWord(w);
+      if(compound){compound.forEach(function(p){if(p.length>1)out.add(p)});out.add(compound.join("_"))}
+    }
+  });
+  return Array.from(out);
+}
+
+// ── Name parsing
+function smartSplitName(raw){
+  if(!raw||!raw.trim())return[];
+  var tokens=[];
+  var clean=raw.trim();
+  // Handle O'Brien, D'Angelo style
+  var apos=clean.match(/^([A-Za-z])'([A-Za-z].*)$/);
+  if(apos){tokens.push((apos[1]+apos[2]).toLowerCase())}
+  // Split on spaces, hyphens, dots, underscores
+  clean.split(/[\s\-_\.]+/).forEach(function(p){
+    var stripped=p.replace(/[^a-zA-Z0-9]/g,"").toLowerCase();
+    if(stripped.length>0){
+      tokens.push(stripped);
+      // If token contains digits, also add alpha-only version: "j0hn"→"john", "john2"→"john"
+      if(/\d/.test(stripped)){
+        var alphaOnly=stripped.replace(/\d/g,"");
+        if(alphaOnly.length>1)tokens.push(alphaOnly);
+        // Also extract trailing number: "john2"→"2"
+        var trailN=stripped.match(/^([a-z]+)(\d+)$/);
+        if(trailN){tokens.push(trailN[1]);tokens.push(trailN[2])}
+      }
+    }
+  });
+  return tokens.filter(function(v,i,a){return a.indexOf(v)===i});
+}
+
+// Build reverse phonetic index once at startup: nickname → canonical name
+var PHONETIC_REVERSE=(function(){
+  var rev={};
+  Object.keys(PHONETIC_MAP).forEach(function(canonical){
+    PHONETIC_MAP[canonical].forEach(function(nick){
+      if(!rev[nick])rev[nick]=[];
+      if(rev[nick].indexOf(canonical)===-1)rev[nick].push(canonical);
+    });
+  });
+  return rev;
+})();
+
+function getNameTokens(raw){
+  if(!raw||!raw.trim())return[];
+  var out=new Set;
+  var parts=smartSplitName(raw);
+  parts.forEach(function(p){
+    if(NAME_PARTICLES.indexOf(p)>-1)return;
+    out.add(p);
+    // Forward: john → johnny, jon, etc.
+    var ph=PHONETIC_MAP[p];
+    if(ph)ph.forEach(function(v){out.add(v)});
+    // Reverse: mike → michael (O(1) lookup now)
+    var rev=PHONETIC_REVERSE[p];
+    if(rev)rev.forEach(function(v){out.add(v)});
+  });
+  return Array.from(out).filter(function(v){return v.length>0});
+}
+
+function parseNickname(raw){
+  if(!raw||!raw.trim())return[];
+  var out=new Set;
+  var s=raw.trim().toLowerCase();
+  out.add(s);
+  // Handle @social handles: strip leading @ and parse the rest
+  var atStripped=s.replace(/^@/,"");
+  if(atStripped!==s){out.add(atStripped);s=atStripped}
+  // Strip leading/trailing underscores, dots, numbers
+  var clean=s.replace(/^[^a-z]+|[^a-z0-9]+$/g,"");
+  if(clean&&clean!==s)out.add(clean);
+  // Handle underscore/dot usernames: john_doe_1990 → john, doe, 1990, johndoe
+  if(/[_\.]/.test(s)){
+    var uparts=s.split(/[_\.]+/).filter(function(p){return p.length>0});
+    uparts.forEach(function(p){out.add(p)});
+    var joined=uparts.filter(function(p){return isNaN(p)}).join("");
+    if(joined&&joined!==s)out.add(joined);
+  }
+  // Split trailing digits (require ≥2 alpha chars to avoid noise like "j99")
+  var trailNum=s.match(/^([a-z]{2,})(\d+)$/);
+  if(trailNum){out.add(trailNum[1]);out.add(trailNum[2]);var ph=PHONETIC_MAP[trailNum[1]];if(ph)ph.forEach(function(v){out.add(v)})}
+  // Split leading digits: "99johnny" → "99", "johnny"
+  var leadNum=s.match(/^(\d+)([a-z]{2,})$/);
+  if(leadNum){out.add(leadNum[2]);out.add(leadNum[1])}
+  // Strip common social/handle prefixes
+  var pfxStrip=s.replace(/^(?:x_|i_|the|real|official|its|mr|ms|dr|_)/,"");
+  if(pfxStrip&&pfxStrip!==s)out.add(pfxStrip);
+  // Phonetic expansion on cleaned base (forward + reverse)
+  var base=clean||s;
+  var ph2=PHONETIC_MAP[base];
+  if(ph2)ph2.forEach(function(v){out.add(v)});
+  var rev=PHONETIC_REVERSE[base];
+  if(rev)rev.forEach(function(v){out.add(v)});
+  // Reverse leet decode: "j0hn" → "john", "@dm1n" → "admin"
+  var rlDecoded=reverseLeet(s);
+  if(rlDecoded!==s&&rlDecoded.length>1)out.add(rlDecoded);
+  var rlBase=reverseLeet(base);
+  if(rlBase!==base&&rlBase.length>1)out.add(rlBase);
+  // Handle dot-separated: "john.smith99" → all parts
+  if(s.indexOf(".")>-1){s.split(".").forEach(function(p){if(p.length>0)out.add(p)})}
+  // Compound-word splitting: "shadowking" → "shadow","king","shadow_king"
+  // Try the full base, and also the alpha-only part if base contains digits (e.g. "shadowking99")
+  var compoundCandidates=[base];
+  if(/[^a-z]/.test(base)){
+    var alphaPart=base.replace(/[^a-z]+/g,"");
+    if(alphaPart.length>=6)compoundCandidates.push(alphaPart);
+  }
+  compoundCandidates.forEach(function(cand){
+    if(cand.length>=6&&!/\d/.test(cand)){
+      var compound=splitCompoundWord(cand);
+      if(compound){compound.forEach(function(p){if(p.length>1)out.add(p)});out.add(compound.join("_"))}
+    }
+  });
+  return Array.from(out).filter(function(v){return v.length>0});
+}
+
+function parseCompany(raw){
+  if(!raw||!raw.trim())return[];
+  var out=new Set;
+  var s=raw.trim().replace(/[.,]+$/,"");
+  var lower=s.toLowerCase();
+  out.add(lower.replace(/\s+/g,""));  // full no-spaces: "acmecorp"
+
+  // Split on spaces, &, +, /, -, _
+  var words=s.split(/[\s\-_&\+\/\\@]+/).map(function(w){return w.replace(/[^a-zA-Z0-9]/g,"")}).filter(function(w){return w.length>0});
+  var coreWords=words.filter(function(w){return LEGAL_SUFFIXES.indexOf(w.toLowerCase())===-1});
+
+  words.forEach(function(w){out.add(w.toLowerCase())});
+  coreWords.forEach(function(w){out.add(w.toLowerCase())});
+
+  // Core brand: join core words only
+  if(coreWords.length>0){
+    var core=coreWords.map(function(w){return w.toLowerCase()}).join("");
+    out.add(core);
+    if(coreWords.length>1)out.add(coreWords.map(function(w){return w.toLowerCase()}).join("_"));
+  }
+
+  // Acronym / abbreviation
+  if(words.length>1){out.add(words.map(function(w){return w[0].toLowerCase()}).join(""))}
+  if(coreWords.length>1){out.add(coreWords.map(function(w){return w[0].toLowerCase()}).join(""))}
+
+  // Extended abbreviations on core words
+  coreWords.forEach(function(w){
+    var wl=w.toLowerCase();
+    if(wl.length>=4)out.add(wl.slice(0,3));      // first 3 chars: "acme"→"acm"
+    if(wl.length>=5)out.add(wl.slice(0,4));      // first 4 chars
+    // Consonant skeleton: strip vowels (IBM-style): "Microsoft"→"mcrft"
+    var consonants=wl.replace(/[aeiou]/g,"");
+    if(consonants.length>=2&&consonants!==wl)out.add(consonants);
+  });
+  // Multi-word consonant skeleton across all core words joined
+  if(coreWords.length>1){
+    var joined=coreWords.map(function(w){return w.toLowerCase()}).join("");
+    var cons=joined.replace(/[aeiou]/g,"");
+    if(cons.length>=2)out.add(cons);
+  }
+
+  // camelCase split: "AcmeCorp" → "acme","corp"
+  splitCamelCase(s.replace(/\s/g,"")).forEach(function(p){if(p.length>1&&LEGAL_SUFFIXES.indexOf(p)===-1)out.add(p)});
+
+  // Domain-style: first word only (most common password base)
+  if(coreWords.length>0)out.add(coreWords[0].toLowerCase());
+
+  // Preserve numbers embedded in company names: "3M","7-Eleven","2degrees"
+  var nameNums=lower.match(/\d+/g);
+  if(nameNums)nameNums.forEach(function(n){out.add(n)});
+  // Alpha-only core: strip leading/trailing digits from each word
+  coreWords.forEach(function(w){
+    var alphaOnly=w.replace(/^\d+|\d+$/g,"").toLowerCase();
+    if(alphaOnly.length>1)out.add(alphaOnly);
+  });
+
+  return Array.from(out).filter(function(v){return v.length>0});
+}
+
+function parseCity(raw){
+  if(!raw||!raw.trim())return[];
+  var out=new Set;
+  var s=raw.trim().toLowerCase();
+  out.add(s.replace(/\s+/g,""));  // e.g. "newyork"
+
+  // Split on spaces and hyphens
+  var words=s.split(/[\s\-]+/).filter(function(w){return w.length>1});
+  words.forEach(function(w){out.add(w)});
+  if(words.length>1)out.add(words.join(""));
+
+  // Strip geographic connecting words: upon, on, sub, by, etc.
+  var coreWords=words.filter(function(w){return!["upon","on","sub","super","under","over","le","la","de","en","bei","am","an","by","cum","next","near","juxta","in","the","sea"].includes(w)});
+  if(coreWords.length>0&&coreWords.length!==words.length){
+    coreWords.forEach(function(w){out.add(w)});
+    out.add(coreWords.join(""));
+    out.add(coreWords[0]);  // first/main word
+  }
+
+  // Strip common city suffix patterns
+  var stripped=s.replace(CITY_SUFFIXES_RE,"").trim();
+  if(stripped&&stripped!==s&&stripped.length>1)out.add(stripped.replace(/\s+/g,""));
+
+  // Known abbreviations lookup (forward: "london" → "ldn")
+  var abbrevs=CITY_ABBREVS[s];
+  if(abbrevs)abbrevs.forEach(function(a){out.add(a)});
+
+  // Reverse abbreviation lookup: if user typed "NYC", find full name and its tokens
+  Object.keys(CITY_ABBREVS).forEach(function(fullName){
+    if(CITY_ABBREVS[fullName].indexOf(s)>-1){
+      // Add the full name (no spaces) and its parts
+      out.add(fullName.replace(/\s+/g,""));
+      fullName.split(/\s+/).forEach(function(w){if(w.length>1)out.add(w)});
+      // Also add sibling abbreviations
+      CITY_ABBREVS[fullName].forEach(function(a){out.add(a)});
+    }
+  });
+
+  // First significant word as standalone
+  if(words.length>1)out.add(words[0]);
+
+  return Array.from(out).filter(function(v){return v.length>0});
+}
+
+function parsePhone(raw){
+  if(!raw||!raw.trim())return[];
+  var out=new Set;
+  var digits=raw.replace(/\D/g,"");
+  if(digits.length<4)return[];
+
+  // Strip common country codes
+  var local=digits;
+  if(digits.length>=11){
+    if(digits[0]==="1")local=digits.slice(1);               // US/CA +1
+    else if(digits.slice(0,2)==="44")local=digits.slice(2); // UK +44
+    else if(digits.slice(0,2)==="61")local=digits.slice(2); // AU +61
+    else if(digits.slice(0,2)==="49")local=digits.slice(2); // DE +49
+    else if(digits.slice(0,2)==="33")local=digits.slice(2); // FR +33
+    else if(digits.slice(0,3)==="353")local=digits.slice(3);// IE +353
+  }
+
+  // All meaningful substrings
+  out.add(digits);
+  if(local!==digits)out.add(local);
+  // Last N digits
+  [4,5,6,7,8].forEach(function(n){if(digits.length>=n)out.add(digits.slice(-n))});
+  // First N digits (area code style)
+  [3,4,5].forEach(function(n){if(local.length>=n)out.add(local.slice(0,n))});
+  // Subscriber number (after area code)
+  if(local.length>=7){out.add(local.slice(-7));out.add(local.slice(3));out.add(local.slice(3,7))}
+  // Middle block of longer numbers
+  if(local.length>=8){out.add(local.slice(1,5));out.add(local.slice(2,6));out.add(local.slice(-6))}
+  // Potential PINs from digits: 4-digit blocks
+  for(var i=0;i<=digits.length-4;i++){var block=digits.slice(i,i+4);if(!/^0+$/.test(block))out.add(block)}
+
+  // Formatted variants as password bases (hyphen-separated)
+  // UK style: 07911-123456, 0791-123-456, 07911 123456
+  if(local.length===10){
+    // Mobile: 07xxx-xxxxxx
+    out.add(local.slice(0,5)+"-"+local.slice(5));
+    out.add(local.slice(0,4)+"-"+local.slice(4));
+    out.add(local.slice(0,5)+local.slice(5));
+  }
+  if(local.length===11){
+    out.add(local.slice(0,5)+"-"+local.slice(5));
+    out.add(local.slice(0,4)+"-"+local.slice(4,7)+"-"+local.slice(7));
+  }
+  // Generic: split into halves with hyphen/dot/space
+  if(local.length>=8){
+    var half=Math.floor(local.length/2);
+    out.add(local.slice(0,half)+"-"+local.slice(half));
+    out.add(local.slice(0,half)+"."+local.slice(half));
+  }
+  // Last 6 with area separator
+  if(local.length>=9){out.add(local.slice(0,local.length-6)+"-"+local.slice(-6))}
+
+  return Array.from(out).filter(function(v){return v.length>0});
+}
+
+// ── Profile save/load
+function profileFields(){
+  return["p-first","p-last","p-nick","p-dob","p-partner","p-pet","p-company","p-city","p-keywords","p-phone","p-email"];
+}
+function saveProfile(){
+  var name=prompt("Profile name:");
+  if(!name||!name.trim())return;
+  name=name.trim();
+  var data={};
+  profileFields().forEach(function(id){data[id]=document.getElementById(id).value});
+  var profiles=getSavedProfiles();
+  profiles[name]=data;
+  localStorage.setItem("wlgen_profiles",JSON.stringify(profiles));
+  renderProfiles();
+}
+function getSavedProfiles(){
+  try{return JSON.parse(localStorage.getItem("wlgen_profiles"))||{}}catch(e){return{}}
+}
+function loadProfile(name){
+  var profiles=getSavedProfiles();
+  var data=profiles[name];if(!data)return;
+  profileFields().forEach(function(id){if(data[id]!==undefined)document.getElementById(id).value=data[id]});
+}
+function deleteProfile(name){
+  var profiles=getSavedProfiles();
+  delete profiles[name];
+  localStorage.setItem("wlgen_profiles",JSON.stringify(profiles));
+  renderProfiles();
+}
+function clearProfile(){
+  profileFields().forEach(function(id){document.getElementById(id).value=""});
+  updateEstimate();
+}
+function renderProfiles(){
+  var profiles=getSavedProfiles();
+  var container=document.getElementById("saved-profiles");
+  var keys=Object.keys(profiles);
+  if(keys.length===0){container.innerHTML="";return}
+  container.innerHTML=keys.map(function(name){
+    return'<span class="profile-chip" onclick="loadProfile(\''+name.replace(/'/g,"\\'")+'\')" title="Load \''+name+'\'">'+name+'<span class="del" onclick="event.stopPropagation();deleteProfile(\''+name.replace(/'/g,"\\'")+'\')">&#10005;</span></span>';
+  }).join("");
+}
+renderProfiles();
+
+function getBaseWords(){
+  var t=new Set;
+
+  // ── First & last name (handles full name in one field, particles, phonetics)
+  var rawFirst=document.getElementById("p-first").value.trim();
+  var rawLast=document.getElementById("p-last").value.trim();
+  var firstParts=smartSplitName(rawFirst);
+  var lastParts=smartSplitName(rawLast);
+  var fn="",ln="";
+
+  if(firstParts.length>=2&&lastParts.length===0){
+    // Full name pasted into first field: "John van der Smith"
+    var particles=firstParts.filter(function(p){return NAME_PARTICLES.indexOf(p)>-1});
+    var nonParticles=firstParts.filter(function(p){return NAME_PARTICLES.indexOf(p)===-1});
+    fn=nonParticles[0]||firstParts[0];
+    ln=nonParticles[nonParticles.length-1]||firstParts[firstParts.length-1];
+    getNameTokens(rawFirst).forEach(function(p){t.add(p)});
+  } else {
+    fn=firstParts[0]||"";
+    ln=lastParts[0]||"";
+    getNameTokens(rawFirst).forEach(function(p){t.add(p)});
+    getNameTokens(rawLast).forEach(function(p){t.add(p)});
+  }
+
+  // ── Nickname / username
+  parseNickname(document.getElementById("p-nick").value).forEach(function(p){t.add(p)});
+
+  // ── Partner name (phonetic + variants)
+  getNameTokens(document.getElementById("p-partner").value).forEach(function(p){t.add(p)});
+
+  // ── Pet name
+  getNameTokens(document.getElementById("p-pet").value).forEach(function(p){t.add(p)});
+
+  // ── Company
+  parseCompany(document.getElementById("p-company").value).forEach(function(p){t.add(p)});
+
+  // ── City
+  parseCity(document.getElementById("p-city").value).forEach(function(p){t.add(p)});
+
+  // ── Keywords & custom words
+  parseWords(document.getElementById("p-keywords").value).forEach(function(e){t.add(e)});
+  parseWords(document.getElementById("p-custom").value).forEach(function(e){t.add(e)});
+
+  // ── Phone
+  parsePhone(document.getElementById("p-phone").value).forEach(function(p){t.add(p)});
+
+  // ── Email address
+  parseEmail(document.getElementById("p-email").value).forEach(function(p){t.add(p)});
+
+  // ── Name combinations (first × last)
+  if(fn&&ln){
+    t.add(fn+ln);t.add(ln+fn);
+    t.add(fn+"."+ln);t.add(fn+"_"+ln);t.add(fn+"-"+ln);
+    t.add(fn[0]+ln);t.add(fn+ln[0]);t.add(fn[0]+ln[0]);
+    t.add(ln+"."+fn);t.add(ln+"_"+fn);
+    // With common separators
+    t.add(fn+ln[0]+ln.slice(1));  // e.g. jSmith
+    // Initials as prefix
+    if(fn.length>1)t.add(fn.slice(0,2)+ln);
+  }
+
+  // ── Cross-field combinations ──────────────────────────────
+  var rawNick=document.getElementById("p-nick").value.trim().toLowerCase();
+  var rawPet=document.getElementById("p-pet").value.trim().toLowerCase().replace(/\s+/g,"");
+  var rawCity=document.getElementById("p-city").value.trim().toLowerCase().replace(/\s+/g,"");
+  var rawCompany=document.getElementById("p-company").value.trim().toLowerCase().replace(/\s+/g,"");
+  var nickBase=rawNick.replace(/^[^a-z]+|[^a-z0-9]+$/g,"")||rawNick;
+  var petBase=rawPet.replace(/^[^a-z]+|[^a-z0-9]+$/g,"")||rawPet;
+  var cityBase=rawCity.replace(/\s+/g,"").split(/[-_]/)[0];
+  var companyBase=rawCompany.replace(/\s+/g,"").split(/[-_]/)[0];
+
+  // DOB year for cross-field use
+  var dobRaw=document.getElementById("p-dob").value.trim();
+  var dobParsed=smartParseDOB(dobRaw);
+  var dobYear=dobParsed?dobParsed.y:"";
+  var dobYear2=dobParsed?dobParsed.y.slice(-2):"";
+  var dobDay=dobParsed?String(parseInt(dobParsed.d)):"";
+  var dobMonth=dobParsed?String(parseInt(dobParsed.m)):"";
+
+  // Helper: add combo pair with all useful suffix variants
+  function addCrossCombo(a,b){
+    if(!a||!b)return;
+    t.add(a+b);t.add(b+a);t.add(a+"_"+b);t.add(a+"."+b);
+    if(dobYear){t.add(a+b+dobYear2);t.add(a+b+dobYear);t.add(b+a+dobYear2);t.add(b+a+dobYear)}
+    if(dobDay){t.add(a+b+dobDay);t.add(b+a+dobDay)}
+    if(dobMonth&&dobDay){t.add(a+b+dobMonth+dobDay)}
+  }
+
+  // pet + year / DOB year
+  if(petBase&&dobYear){t.add(petBase+dobYear);t.add(petBase+dobYear2);t.add(dobYear+petBase);t.add(petBase+dobDay);t.add(petBase+dobMonth+dobYear2)}
+
+  // city + company
+  if(cityBase&&companyBase)addCrossCombo(cityBase,companyBase);
+
+  // nick + DOB year
+  if(nickBase&&dobYear){t.add(nickBase+dobYear);t.add(nickBase+dobYear2);t.add(dobYear+nickBase);t.add(nickBase+dobYear+"!");t.add(nickBase+dobYear2+"!")}
+
+  // first + pet/city/company (all first name parts, e.g. Mary-Jane → maryjane+rex)
+  firstParts.forEach(function(fp){
+    if(petBase)addCrossCombo(fp,petBase);
+    if(cityBase)addCrossCombo(fp,cityBase);
+    if(companyBase)addCrossCombo(fp,companyBase);
+  });
+
+  // last + pet/city (all last name parts)
+  lastParts.forEach(function(lp){
+    if(petBase)addCrossCombo(lp,petBase);
+    if(cityBase)addCrossCombo(lp,cityBase);
+  });
+
+  // nick + pet
+  if(nickBase&&petBase)addCrossCombo(nickBase,petBase);
+
+  // nick + city
+  if(nickBase&&cityBase)addCrossCombo(nickBase,cityBase);
+
+  // pet + company
+  if(petBase&&companyBase)addCrossCombo(petBase,companyBase);
+
+  // partner cross-combinations — use all phonetic/parsed tokens so "Mike" → michael,mick etc.
+  var partnerTokens=getNameTokens(document.getElementById("p-partner").value);
+  if(partnerTokens.length>0){
+    partnerTokens.forEach(function(partnerBase){
+      if(!partnerBase)return;
+      if(petBase)addCrossCombo(partnerBase,petBase);
+      if(cityBase)addCrossCombo(partnerBase,cityBase);
+      if(companyBase)addCrossCombo(partnerBase,companyBase);
+      if(nickBase)addCrossCombo(partnerBase,nickBase);
+      if(dobYear){t.add(partnerBase+dobYear);t.add(partnerBase+dobYear2);t.add(dobYear+partnerBase)}
+      if(dobDay){t.add(partnerBase+dobDay)}
+      firstParts.forEach(function(fp){addCrossCombo(fp,partnerBase)});
+      lastParts.forEach(function(lp){addCrossCombo(lp,partnerBase)});
+    });
+  }
+
+  // name + DOB month+day (e.g. john615 from john + june 15)
+  if(fn&&dobDay&&dobMonth){t.add(fn+dobMonth+dobDay);t.add(fn+dobDay+dobMonth)}
+  if(ln&&dobDay&&dobMonth){t.add(ln+dobMonth+dobDay);t.add(ln+dobDay+dobMonth)}
+
+  return Array.from(t).filter(function(e){return e.length>0});
+}
+
+var FULL_LIST=[];
+var HARD_CAP=1000000;
+var WARN_THRESHOLD=250000;
+var DEFAULT_LIMIT=100000;
+var MAX_YEAR_SPAN=30;      // Fix 1: clamp year range
+var IMPORT_CAP=5000;       // Fix 2: cap imported words
+var COMBO_CAP=50;          // Fix 3: cap bases used in combinations
+var RENDER_CAP=2000;       // Fix 6: max lines rendered in preview
+var _estTimer=null;        // Fix 5: debounce handle
+var _worker=null;          // Fix 7: Web Worker reference
+
+// Fix 1 — enforce max year span when user changes either input
+function clampYearRange(){
+  var fromEl=document.getElementById("yr-from");
+  var toEl=document.getElementById("yr-to");
+  var yf=parseInt(fromEl.value)||2000;
+  var yt=parseInt(toEl.value)||2026;
+  if(yt-yf>MAX_YEAR_SPAN){
+    // Clamp whichever end was just edited by checking which is further from the other
+    if(document.activeElement===toEl){toEl.value=yf+MAX_YEAR_SPAN}
+    else{fromEl.value=yt-MAX_YEAR_SPAN}
+  }
+  if(yt<yf)toEl.value=yf;
+}
+
+// Fix 2 — cap imported words in loadWordFile and p-custom textarea
+function loadWordFile(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var lines=e.target.result.trim().split(/\r?\n/).slice(0,IMPORT_CAP);
+    if(e.target.result.trim().split(/\r?\n/).length>IMPORT_CAP){
+      alert("File truncated to "+IMPORT_CAP.toLocaleString()+" words to protect performance.");
+    }
+    var existing=document.getElementById("p-custom").value.trim();
+    var newWords=lines.join("\n");
+    document.getElementById("p-custom").value=existing?(existing+"\n"+newWords):newWords;
+    updateEstimate();
+  };
+  reader.readAsText(file);
+}
+
+// ── Exact dry-run estimate via Worker — same logic as generation, counts deduped candidates
+function buildDryRunSrc(){
+  return '('+( function dryRunWorker(){
+    var SUFFIXES,PREFIXES,SYMBOLS,KEYBOARD_WALKS,LEET;
+    function caseVariants(w){var u=w.toUpperCase(),t=w[0].toUpperCase()+w.slice(1),l=w.toLowerCase();var r=[l];if(u!==l)r.push(u);if(t!==l&&t!==u)r.push(t);return r}
+    function leetVariants(t){var n=[t=t.toLowerCase()];for(var o=0;o<t.length;o++){var e=t[o];LEET[e]&&LEET[e].forEach(function(s){n.push(t.slice(0,o)+s+t.slice(o+1))})}var a="";for(var r=0;r<t.length;r++)a+=LEET[t[r]]?LEET[t[r]][0]:t[r];if(a!==t)n.push(a);return n}
+    self.onmessage=function(ev){
+      var cfg=ev.data;
+      SUFFIXES=cfg.SUFFIXES;PREFIXES=cfg.PREFIXES;SYMBOLS=cfg.SYMBOLS;KEYBOARD_WALKS=cfg.KEYBOARD_WALKS;LEET=cfg.LEET;
+      var minLen=cfg.minLen,maxLen=cfg.maxLen,limit=cfg.limit,mustContain=cfg.mustContain;
+      var doCaseVar=cfg.doCaseVar,doLeet=cfg.doLeet,doSuffixes=cfg.doSuffixes,doDates=cfg.doDates;
+      var doCombos=cfg.doCombos,doReverse=cfg.doReverse,doPrefixes=cfg.doPrefixes,doSymbols=cfg.doSymbols;
+      var doWalks=cfg.doWalks,doDouble=cfg.doDouble;
+      var allSuffixes=cfg.allSuffixes,allPrefixes=cfg.allPrefixes;
+      var yearList=cfg.yearList,dateParts=cfg.dateParts,bases=cfg.bases,COMBO_CAP=cfg.COMBO_CAP;
+      var seen=new Set;
+      function add(w){
+        if(seen.size>=limit)return false;
+        if(!w||w.length<minLen||w.length>maxLen)return true;
+        if(mustContain&&w.toLowerCase().indexOf(mustContain)===-1)return true;
+        seen.add(w);return true;
+      }
+      if(doDates)for(var di=0;di<dateParts.length;di++){if(!add(dateParts[di]))break}
+      if(doWalks)for(var wi=0;wi<KEYBOARD_WALKS.length;wi++){if(!add(KEYBOARD_WALKS[wi]))break}
+      if(yearList)for(var yi=0;yi<yearList.length;yi++){if(!add(yearList[yi]))break}
+      outer:for(var bi=0;bi<bases.length;bi++){
+        if(seen.size>=limit)break;
+        var base=bases[bi],variants=[base];
+        if(doCaseVar)variants=variants.concat(caseVariants(base));
+        if(doLeet){var lv=leetVariants(base);if(doCaseVar)lv.forEach(function(l){variants=variants.concat(caseVariants(l))});variants=variants.concat(lv)}
+        if(doReverse)variants.push(base.split("").reverse().join(""));
+        if(doDouble){variants.push(base+base);variants.push(base+"_"+base)}
+        for(var vi=0;vi<variants.length;vi++){if(!add(variants[vi]))break outer}
+        if(seen.size>=limit)break outer;
+        if(doSuffixes){
+          for(var si=0;si<allSuffixes.length;si++){for(var vi2=0;vi2<variants.length;vi2++){if(!add(variants[vi2]+allSuffixes[si]))break outer}}
+          if(doDates){for(var dpi=0;dpi<dateParts.length;dpi++){for(var vi3=0;vi3<variants.length;vi3++){if(!add(variants[vi3]+dateParts[dpi]))break outer;if(!add(dateParts[dpi]+variants[vi3]))break outer}}}
+          if(yearList){for(var yli=0;yli<yearList.length;yli++){for(var vi4=0;vi4<variants.length;vi4++){if(!add(variants[vi4]+yearList[yli]))break outer;if(!add(yearList[yli]+variants[vi4]))break outer}}}
+        }
+        if(doPrefixes){for(var pi=0;pi<allPrefixes.length;pi++){for(var vi5=0;vi5<variants.length;vi5++){if(!add(allPrefixes[pi]+variants[vi5]))break outer}}}
+        if(doSymbols){for(var symi=0;symi<SYMBOLS.length;symi++){for(var vi6=0;vi6<variants.length;vi6++){if(!add(SYMBOLS[symi]+variants[vi6]+SYMBOLS[symi]))break outer;if(!add(variants[vi6]+SYMBOLS[symi]+SYMBOLS[symi]))break outer}}}
+      }
+      if(doCombos&&bases.length>1&&seen.size<limit){
+        var cb=bases.slice(0,COMBO_CAP);
+        cOuter:for(var ci=0;ci<cb.length;ci++){for(var cj=0;cj<cb.length;cj++){
+          if(ci===cj)continue;
+          var combo=cb[ci]+cb[cj];
+          if(!add(combo))break cOuter;if(!add(cb[ci]+"_"+cb[cj]))break cOuter;if(!add(cb[ci]+"."+cb[cj]))break cOuter;
+          if(doSuffixes){for(var csi=0;csi<Math.min(allSuffixes.length,12);csi++){if(!add(combo+allSuffixes[csi]))break cOuter}}
+        }}
+      }
+      self.postMessage({count:seen.size,hitLimit:seen.size>=limit});
+    };
+  }).toString()+')()';
+}
+
+var _dryWorker=null;
+
+function _buildCfg(){
+  var minLen=parseInt(document.getElementById("f-min").value)||6;
+  var maxLen=parseInt(document.getElementById("f-max").value)||20;
+  var mustContain=document.getElementById("f-must").value.trim().toLowerCase();
+  var doCaseVar=isOn(0),doLeet=isOn(1),doSuffixes=isOn(2),doDates=isOn(3);
+  var doCombos=isOn(4),doReverse=isOn(5),doPrefixes=isOn(6),doSymbols=isOn(7);
+  var doWalks=isOn(8),doDouble=isOn(9),doYears=isOn(10);
+  var extraSuffixes=document.getElementById("c-suffixes").value.split(",").map(function(s){return s.trim()}).filter(Boolean);
+  var extraPrefixes=document.getElementById("c-prefixes").value.split(",").map(function(s){return s.trim()}).filter(Boolean);
+  var yearList=[];
+  if(doYears){
+    var yf=parseInt(document.getElementById("yr-from").value)||2000;
+    var yt=Math.min(parseInt(document.getElementById("yr-to").value)||2026,yf+MAX_YEAR_SPAN);
+    for(var y=yf;y<=yt;y++){yearList.push(String(y));yearList.push(String(y).slice(-2))}
+  }
+  var limit=Math.min(parseInt(document.getElementById("f-limit").value)||DEFAULT_LIMIT,HARD_CAP);
+  return{SUFFIXES:SUFFIXES,PREFIXES:PREFIXES,SYMBOLS:SYMBOLS,KEYBOARD_WALKS:KEYBOARD_WALKS,LEET:LEET,
+    minLen:minLen,maxLen:maxLen,limit:limit,mustContain:mustContain,
+    doCaseVar:doCaseVar,doLeet:doLeet,doSuffixes:doSuffixes,doDates:doDates,
+    doCombos:doCombos,doReverse:doReverse,doPrefixes:doPrefixes,doSymbols:doSymbols,
+    doWalks:doWalks,doDouble:doDouble,
+    allSuffixes:SUFFIXES.concat(extraSuffixes),allPrefixes:PREFIXES.concat(extraPrefixes),
+    yearList:yearList,dateParts:datePerms(document.getElementById("p-dob").value.trim()),
+    bases:getBaseWords(),COMBO_CAP:COMBO_CAP};
+}
+
+// Fix 5 — debounced: waits 300ms after last change before running dry-run
+function updateEstimate(){
+  clearTimeout(_estTimer);
+  _estTimer=setTimeout(_runDryEstimate,300);
+}
+
+function _runDryEstimate(){
+  var bases=getBaseWords();
+  if(bases.length===0){
+    document.getElementById("est-count").textContent="—";
+    document.getElementById("est-hint").style.display="inline";
+    document.getElementById("est-warn").style.display="none";
+    document.getElementById("est-block").style.display="none";
+    document.getElementById("btn-gen-anyway").style.display="none";
+    document.getElementById("advanced-row").style.display="none";
+    document.getElementById("btn-gen").disabled=false;
+    return;
+  }
+  document.getElementById("est-hint").style.display="none";
+  document.getElementById("est-count").textContent="calculating…";
+  if(_dryWorker){_dryWorker.terminate();_dryWorker=null}
+  try{
+    var blob=new Blob([buildDryRunSrc()],{type:"text/javascript"});
+    var url=URL.createObjectURL(blob);
+    _dryWorker=new Worker(url);
+    URL.revokeObjectURL(url);
+    _dryWorker.onmessage=function(ev){_dryWorker=null;_doUpdateEstimate(ev.data.count,ev.data.hitLimit)};
+    _dryWorker.onerror=function(){_dryWorker=null;document.getElementById("est-count").textContent="unavailable"};
+    _dryWorker.postMessage(_buildCfg());
+  }catch(e){
+    // Fallback heuristic if Workers blocked
+    var cfg=_buildCfg();
+    var vpb=1+(cfg.doCaseVar?3:0)+(cfg.doLeet?5:0)+(cfg.doReverse?1:0)+(cfg.doDouble?2:0);
+    var perBase=vpb;
+    if(cfg.doSuffixes)perBase+=vpb*(cfg.allSuffixes.length+cfg.dateParts.length+(cfg.yearList.length*2));
+    if(cfg.doPrefixes)perBase+=vpb*cfg.allPrefixes.length;
+    if(cfg.doSymbols)perBase+=vpb*SYMBOLS.length*2;
+    var t=cfg.bases.length*perBase+(cfg.doWalks?KEYBOARD_WALKS.length:0)+cfg.dateParts.length+cfg.yearList.length;
+    if(cfg.doCombos&&cfg.bases.length>1){var cb=Math.min(cfg.bases.length,COMBO_CAP);t+=cb*(cb-1)*(3+(cfg.doSuffixes?12:0))}
+    _doUpdateEstimate(Math.min(Math.floor(t*0.75),cfg.limit),false);
+  }
+}
+
+function _doUpdateEstimate(est,hitLimit){
+  var bar=document.getElementById("estimate-bar");
+  var countEl=document.getElementById("est-count");
+  var warnEl=document.getElementById("est-warn");
+  var blockEl=document.getElementById("est-block");
+  var advRow=document.getElementById("advanced-row");
+  var genBtn=document.getElementById("btn-gen");
+  if(!est){countEl.textContent="—";return}
+  countEl.textContent=est.toLocaleString()+" candidates"+(hitLimit?" (capped)":"");
+  var advOn=document.getElementById("advanced-mode").checked;
+  var userLimit=Math.min(parseInt(document.getElementById("f-limit").value)||DEFAULT_LIMIT,HARD_CAP);
+  if(hitLimit&&userLimit>=HARD_CAP&&!advOn){
+    warnEl.style.display="none";blockEl.style.display="inline";advRow.style.display="flex";genBtn.disabled=true;
+  }else if(est>WARN_THRESHOLD){
+    warnEl.style.display="inline";blockEl.style.display="none";advRow.style.display="none";genBtn.disabled=false;
+  }else{
+    warnEl.style.display="none";blockEl.style.display="none";advRow.style.display="none";genBtn.disabled=false;
+  }
+}
+
+function onAdvancedToggle(){
+  var txt=document.getElementById("est-count").textContent||"";
+  var est=parseInt(txt.replace(/[^0-9]/g,""))||0;
+  var hitLimit=txt.indexOf("capped")>-1||est>=HARD_CAP;
+  _doUpdateEstimate(est,hitLimit);
+}
+
+// Fix 7 — build Web Worker from inline script via Blob URL
+// The worker receives a config object and posts back {list, hitLimit}
+function buildWorkerSrc(){
+  // Inline the pure-data arrays and generation logic as a self-contained string
+  // We serialise only what the worker needs (no DOM)
+  return '(' + (function workerMain(){
+    var SUFFIXES,PREFIXES,SYMBOLS,KEYBOARD_WALKS,LEET,LEET_REVERSE;
+
+    function caseVariants(w){var u=w.toUpperCase(),t=w[0].toUpperCase()+w.slice(1),l=w.toLowerCase();var r=[l];if(u!==l)r.push(u);if(t!==l&&t!==u)r.push(t);return r}
+    function leetVariants(t){var n=[t=t.toLowerCase()];for(var o=0;o<t.length;o++){var e=t[o];LEET[e]&&LEET[e].forEach(function(e){n.push(t.slice(0,o)+e+t.slice(o+1))})}var a="";for(var r=0;r<t.length;r++)a+=LEET[t[r]]?LEET[t[r]][0]:t[r];if(a!==t)n.push(a);return n}
+
+    self.onmessage=function(ev){
+      var cfg=ev.data;
+      SUFFIXES=cfg.SUFFIXES;PREFIXES=cfg.PREFIXES;SYMBOLS=cfg.SYMBOLS;
+      KEYBOARD_WALKS=cfg.KEYBOARD_WALKS;LEET=cfg.LEET;LEET_REVERSE=cfg.LEET_REVERSE;
+
+      var minLen=cfg.minLen,maxLen=cfg.maxLen,limit=cfg.limit,mustContain=cfg.mustContain;
+      var doCaseVar=cfg.doCaseVar,doLeet=cfg.doLeet,doSuffixes=cfg.doSuffixes,doDates=cfg.doDates;
+      var doCombos=cfg.doCombos,doReverse=cfg.doReverse,doPrefixes=cfg.doPrefixes,doSymbols=cfg.doSymbols;
+      var doWalks=cfg.doWalks,doDouble=cfg.doDouble;
+      var allSuffixes=cfg.allSuffixes,allPrefixes=cfg.allPrefixes;
+      var yearList=cfg.yearList,dateParts=cfg.dateParts,bases=cfg.bases;
+      var COMBO_CAP=cfg.COMBO_CAP;
+
+      var pool=new Set;
+
+      // Fix 4 — addIfOk returns false immediately when hard cap hit; every call-site checks it
+      function addIfOk(w){
+        if(pool.size>=limit)return false; // Fix 4: hard stop
+        if(!w||w.length<minLen||w.length>maxLen)return true;
+        if(mustContain&&w.toLowerCase().indexOf(mustContain)===-1)return true;
+        pool.add(w);return true;
+      }
+
+      if(doDates)for(var di=0;di<dateParts.length;di++){if(!addIfOk(dateParts[di]))break}
+      if(doWalks)for(var wi=0;wi<KEYBOARD_WALKS.length;wi++){if(!addIfOk(KEYBOARD_WALKS[wi]))break}
+      if(yearList)for(var yi=0;yi<yearList.length;yi++){if(!addIfOk(yearList[yi]))break}
+
+      outer:for(var bi=0;bi<bases.length;bi++){
+        if(pool.size>=limit)break outer;
+        var base=bases[bi];
+        var variants=[base];
+        if(doCaseVar)variants=variants.concat(caseVariants(base));
+        if(doLeet){var lv=leetVariants(base);if(doCaseVar)lv.forEach(function(l){variants=variants.concat(caseVariants(l))});variants=variants.concat(lv)}
+        if(doReverse)variants.push(base.split("").reverse().join(""));
+        if(doDouble){variants.push(base+base);variants.push(base+"_"+base)}
+        for(var vi=0;vi<variants.length;vi++){if(!addIfOk(variants[vi]))break outer}
+        if(pool.size>=limit)break outer;
+        if(doSuffixes){
+          for(var si=0;si<allSuffixes.length;si++){for(var vi2=0;vi2<variants.length;vi2++){if(!addIfOk(variants[vi2]+allSuffixes[si]))break outer}}
+          if(doDates){for(var dpi=0;dpi<dateParts.length;dpi++){for(var vi3=0;vi3<variants.length;vi3++){if(!addIfOk(variants[vi3]+dateParts[dpi]))break outer;if(!addIfOk(dateParts[dpi]+variants[vi3]))break outer}}}
+          if(yearList){for(var yli=0;yli<yearList.length;yli++){for(var vi4=0;vi4<variants.length;vi4++){if(!addIfOk(variants[vi4]+yearList[yli]))break outer;if(!addIfOk(yearList[yli]+variants[vi4]))break outer}}}
+        }
+        if(doPrefixes){for(var pi=0;pi<allPrefixes.length;pi++){for(var vi5=0;vi5<variants.length;vi5++){if(!addIfOk(allPrefixes[pi]+variants[vi5]))break outer}}}
+        if(doSymbols){for(var symi=0;symi<SYMBOLS.length;symi++){for(var vi6=0;vi6<variants.length;vi6++){if(!addIfOk(SYMBOLS[symi]+variants[vi6]+SYMBOLS[symi]))break outer;if(!addIfOk(variants[vi6]+SYMBOLS[symi]+SYMBOLS[symi]))break outer}}}
+      }
+
+      // Fix 3 — cap bases used in combinations to COMBO_CAP
+      if(doCombos&&bases.length>1&&pool.size<limit){
+        var comboBases=bases.slice(0,COMBO_CAP);
+        comboOuter:for(var ci=0;ci<comboBases.length;ci++){
+          for(var cj=0;cj<comboBases.length;cj++){
+            if(ci===cj)continue;
+            var combo=comboBases[ci]+comboBases[cj];
+            if(!addIfOk(combo))break comboOuter;
+            if(!addIfOk(comboBases[ci]+"_"+comboBases[cj]))break comboOuter;
+            if(!addIfOk(comboBases[ci]+"."+comboBases[cj]))break comboOuter;
+            if(doSuffixes){for(var csi=0;csi<Math.min(allSuffixes.length,12);csi++){if(!addIfOk(combo+allSuffixes[csi]))break comboOuter}}
+          }
+        }
+      }
+
+      var list=Array.from(pool);
+      self.postMessage({list:list,hitLimit:list.length>=limit});
+    };
+  }).toString() + ')()';
+}
+
+function generate(){
+  var advOn=document.getElementById("advanced-mode").checked;
+  // Check if estimate bar is currently blocking (hitLimit + no advMode)
+  var blockEl=document.getElementById("est-block");
+  if(blockEl.style.display==="inline"&&!advOn){return}
+
+  var btn=document.getElementById("btn-gen");
+  btn.disabled=true;
+  btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generating...';
+  document.getElementById("warn-box").style.display="none";
+  document.getElementById("limit-box").style.display="none";
+  document.getElementById("prog-fill").style.width="60%";
+
+  var minLen=parseInt(document.getElementById("f-min").value)||6;
+  var maxLen=parseInt(document.getElementById("f-max").value)||20;
+  var userLimit=parseInt(document.getElementById("f-limit").value)||DEFAULT_LIMIT;
+  var limit=Math.min(userLimit,HARD_CAP);
+  var mustContain=document.getElementById("f-must").value.trim().toLowerCase();
+
+  var doCaseVar=isOn(0),doLeet=isOn(1),doSuffixes=isOn(2),doDates=isOn(3);
+  var doCombos=isOn(4),doReverse=isOn(5),doPrefixes=isOn(6),doSymbols=isOn(7);
+  var doWalks=isOn(8),doDouble=isOn(9),doYears=isOn(10);
+
+  var extraSuffixes=document.getElementById("c-suffixes").value.split(",").map(function(s){return s.trim()}).filter(function(s){return s.length>0});
+  var extraPrefixes=document.getElementById("c-prefixes").value.split(",").map(function(s){return s.trim()}).filter(function(s){return s.length>0});
+  var allSuffixes=SUFFIXES.concat(extraSuffixes);
+  var allPrefixes=PREFIXES.concat(extraPrefixes);
+
+  var yearList=[];
+  if(doYears){
+    var yrFrom=parseInt(document.getElementById("yr-from").value)||2000;
+    var yrTo=parseInt(document.getElementById("yr-to").value)||2026;
+    // Fix 1: enforce clamp in generation too
+    yrTo=Math.min(yrTo,yrFrom+MAX_YEAR_SPAN);
+    for(var y=yrFrom;y<=yrTo;y++){yearList.push(String(y));yearList.push(String(y).slice(-2))}
+  }
+
+  var bases=getBaseWords();
+  if(bases.length===0){
+    btn.disabled=false;
+    btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate wordlist';
+    alert("Enter at least one profile field or keyword.");return
+  }
+  initProbScorer(bases);
+
+  var dob=document.getElementById("p-dob").value.trim();
+  var dateParts=datePerms(dob);
+
+  // Fix 7 — run generation in a Web Worker to keep UI responsive
+  if(_worker){_worker.terminate();_worker=null}
+  try{
+    var blob=new Blob([buildWorkerSrc()],{type:"text/javascript"});
+    var workerUrl=URL.createObjectURL(blob);
+    _worker=new Worker(workerUrl);
+    URL.revokeObjectURL(workerUrl);
+
+    _worker.onmessage=function(ev){
+      _worker=null;
+      _finishGenerate(ev.data.list,ev.data.hitLimit,minLen,maxLen,bases.length,limit);
+      btn.disabled=false;
+      btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate wordlist';
+    };
+    _worker.onerror=function(e){
+      console.warn("Worker failed, falling back to main thread:",e);
+      _worker=null;
+      _generateMainThread(minLen,maxLen,limit,mustContain,doCaseVar,doLeet,doSuffixes,doDates,doCombos,doReverse,doPrefixes,doSymbols,doWalks,doDouble,allSuffixes,allPrefixes,yearList,dateParts,bases,btn);
+    };
+    _worker.postMessage({
+      SUFFIXES:SUFFIXES,PREFIXES:PREFIXES,SYMBOLS:SYMBOLS,
+      KEYBOARD_WALKS:KEYBOARD_WALKS,LEET:LEET,LEET_REVERSE:LEET_REVERSE,
+      minLen:minLen,maxLen:maxLen,limit:limit,mustContain:mustContain,
+      doCaseVar:doCaseVar,doLeet:doLeet,doSuffixes:doSuffixes,doDates:doDates,
+      doCombos:doCombos,doReverse:doReverse,doPrefixes:doPrefixes,doSymbols:doSymbols,
+      doWalks:doWalks,doDouble:doDouble,
+      allSuffixes:allSuffixes,allPrefixes:allPrefixes,
+      yearList:yearList,dateParts:dateParts,bases:bases,COMBO_CAP:COMBO_CAP
+    });
+  }catch(e){
+    // Fix 7 fallback: if Workers aren't available (file://, old browser) run on main thread
+    console.warn("Web Worker unavailable, running on main thread");
+    setTimeout(function(){
+      _generateMainThread(minLen,maxLen,limit,mustContain,doCaseVar,doLeet,doSuffixes,doDates,doCombos,doReverse,doPrefixes,doSymbols,doWalks,doDouble,allSuffixes,allPrefixes,yearList,dateParts,bases,btn);
+    },10);
+  }
+}
+
+function generateAnyway(){generate()}
+
+// Main-thread fallback (same logic as worker, but runs synchronously)
+function _generateMainThread(minLen,maxLen,limit,mustContain,doCaseVar,doLeet,doSuffixes,doDates,doCombos,doReverse,doPrefixes,doSymbols,doWalks,doDouble,allSuffixes,allPrefixes,yearList,dateParts,bases,btn){
+  var pool=new Set;
+  function addIfOk(w){
+    if(pool.size>=limit)return false; // Fix 4
+    if(!w||w.length<minLen||w.length>maxLen)return true;
+    if(mustContain&&w.toLowerCase().indexOf(mustContain)===-1)return true;
+    pool.add(w);return true;
+  }
+  if(doDates)for(var di=0;di<dateParts.length;di++){if(!addIfOk(dateParts[di]))break}
+  if(doWalks)for(var wi=0;wi<KEYBOARD_WALKS.length;wi++){if(!addIfOk(KEYBOARD_WALKS[wi]))break}
+  if(yearList)for(var yi=0;yi<yearList.length;yi++){if(!addIfOk(yearList[yi]))break}
+  outer:for(var bi=0;bi<bases.length;bi++){
+    if(pool.size>=limit)break outer;
+    var base=bases[bi];
+    var variants=[base];
+    if(doCaseVar)variants=variants.concat(caseVariants(base));
+    if(doLeet){var lv=leetVariants(base);if(doCaseVar)lv.forEach(function(l){variants=variants.concat(caseVariants(l))});variants=variants.concat(lv)}
+    if(doReverse)variants.push(base.split("").reverse().join(""));
+    if(doDouble){variants.push(base+base);variants.push(base+"_"+base)}
+    for(var vi=0;vi<variants.length;vi++){if(!addIfOk(variants[vi]))break outer}
+    if(pool.size>=limit)break outer;
+    if(doSuffixes){
+      for(var si=0;si<allSuffixes.length;si++){for(var vi2=0;vi2<variants.length;vi2++){if(!addIfOk(variants[vi2]+allSuffixes[si]))break outer}}
+      if(doDates){for(var dpi=0;dpi<dateParts.length;dpi++){for(var vi3=0;vi3<variants.length;vi3++){if(!addIfOk(variants[vi3]+dateParts[dpi]))break outer;if(!addIfOk(dateParts[dpi]+variants[vi3]))break outer}}}
+      if(yearList){for(var yli=0;yli<yearList.length;yli++){for(var vi4=0;vi4<variants.length;vi4++){if(!addIfOk(variants[vi4]+yearList[yli]))break outer;if(!addIfOk(yearList[yli]+variants[vi4]))break outer}}}
+    }
+    if(doPrefixes){for(var pi=0;pi<allPrefixes.length;pi++){for(var vi5=0;vi5<variants.length;vi5++){if(!addIfOk(allPrefixes[pi]+variants[vi5]))break outer}}}
+    if(doSymbols){for(var symi=0;symi<SYMBOLS.length;symi++){for(var vi6=0;vi6<variants.length;vi6++){if(!addIfOk(SYMBOLS[symi]+variants[vi6]+SYMBOLS[symi]))break outer;if(!addIfOk(variants[vi6]+SYMBOLS[symi]+SYMBOLS[symi]))break outer}}}
+  }
+  if(doCombos&&bases.length>1&&pool.size<limit){
+    var comboBases=bases.slice(0,COMBO_CAP); // Fix 3
+    comboOuter:for(var ci=0;ci<comboBases.length;ci++){
+      for(var cj=0;cj<comboBases.length;cj++){
+        if(ci===cj)continue;
+        var combo=comboBases[ci]+comboBases[cj];
+        if(!addIfOk(combo))break comboOuter;
+        if(!addIfOk(comboBases[ci]+"_"+comboBases[cj]))break comboOuter;
+        if(!addIfOk(comboBases[ci]+"."+comboBases[cj]))break comboOuter;
+        if(doSuffixes){for(var csi=0;csi<Math.min(allSuffixes.length,12);csi++){if(!addIfOk(combo+allSuffixes[csi]))break comboOuter}}
+      }
+    }
+  }
+  var list=Array.from(pool);
+  _finishGenerate(list,list.length>=limit,minLen,maxLen,bases.length,limit);
+  btn.disabled=false;
+  btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate wordlist';
+}
+
+function _finishGenerate(list,hitLimit,minLen,maxLen,baseCount,limit){
+  FULL_LIST=list;
+  var isLarge=FULL_LIST.length>20000;
+  document.getElementById("warn-box").style.display=isLarge&&FULL_LIST.length<=WARN_THRESHOLD?"block":"none";
+  document.getElementById("limit-box").style.display=hitLimit?"block":"none";
+  document.getElementById("live-min").value=minLen;
+  document.getElementById("live-max").value=maxLen;
+  document.getElementById("live-search").value="";
+  document.getElementById("live-sort").value="default";
+  var sr=document.getElementById("stats-row");
+  sr.style.display="flex";
+  var sizeLabel=FULL_LIST.length<10000?"instant":FULL_LIST.length<50000?"normal":FULL_LIST.length<WARN_THRESHOLD?"large":"very large";
+  sr.innerHTML='<div class="stat-pill">Total generated <strong>'+FULL_LIST.length.toLocaleString()+'</strong></div>'+
+    '<div class="stat-pill">Base variants <strong>'+baseCount+'</strong> <span style="color:var(--accent);font-size:10px">smart parsed</span></div>'+
+    '<div class="stat-pill">Length range <strong>'+minLen+"\u2013"+maxLen+'</strong></div>'+
+    '<div class="stat-pill">Size <strong>'+sizeLabel+'</strong></div>'+
+    (hitLimit?'<div class="stat-pill" style="color:var(--red)">Cap reached \u2014 increase max words or enable Advanced Mode</div>':"");
+  document.getElementById("prog-fill").style.width="100%";
+  setTimeout(function(){document.getElementById("prog-fill").style.width="0%"},600);
+  document.getElementById("output-panel").style.display="block";
+  applyLiveFilter();
+}
+
+function sortList(arr, mode){
+  if(mode==="alpha")return arr.slice().sort();
+  if(mode==="alpha-desc")return arr.slice().sort().reverse();
+  if(mode==="length")return arr.slice().sort(function(a,b){return a.length-b.length});
+  if(mode==="length-desc")return arr.slice().sort(function(a,b){return b.length-a.length});
+  if(mode==="shuffle"){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=a[i];a[i]=a[j];a[j]=tmp}return a}
+  if(mode==="prob")return arr.slice().sort(function(a,b){return scoreWord(b)-scoreWord(a)});
+  return arr;
+}
+
+// Fix 6 — limit preview render to RENDER_CAP lines; download always gets full list
+function applyLiveFilter(){
+  var mn=parseInt(document.getElementById("live-min").value)||1;
+  var mx=parseInt(document.getElementById("live-max").value)||999;
+  var q=(document.getElementById("live-search").value||"").toLowerCase();
+  var sortMode=document.getElementById("live-sort").value;
+  var filtered=FULL_LIST.filter(function(w){return w.length>=mn&&w.length<=mx&&(!q||w.indexOf(q)>-1)});
+  filtered=sortList(filtered,sortMode);
+  var renderCount=Math.min(filtered.length,RENDER_CAP);
+  document.getElementById("word-count").textContent=filtered.length.toLocaleString()+" words";
+  document.getElementById("showing-lbl").textContent="Showing "+renderCount.toLocaleString()+" of "+filtered.length.toLocaleString();
+  document.getElementById("output-area").textContent=filtered.slice(0,renderCount).join("\n");
+}
+
+function getFiltered(){
+  var mn=parseInt(document.getElementById("live-min").value)||1;
+  var mx=parseInt(document.getElementById("live-max").value)||999;
+  var q=(document.getElementById("live-search").value||"").toLowerCase();
+  var sortMode=document.getElementById("live-sort").value;
+  var filtered=FULL_LIST.filter(function(w){return w.length>=mn&&w.length<=mx&&(!q||w.indexOf(q)>-1)});
+  return sortList(filtered,sortMode);
+}
+
+function copyAll(){
+  var txt=getFiltered().join("\n");
+  function fallback(t){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");showFlash("Copied!")}catch(e){alert("Copy failed — try download instead.")}document.body.removeChild(ta)}
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(function(){showFlash("Copied!")}).catch(function(){fallback(txt)})}else{fallback(txt)}
+}
+
+function downloadList(){
+  var words=getFiltered();
+  if(words.length===0){alert("No words to download.");return}
+  var blob=new Blob([words.join("\n")],{type:"text/plain"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  var target=document.getElementById("p-first").value.trim()||"wordlist";
+  a.download=target.toLowerCase().replace(/\s+/g,"_")+"_wordlist.txt";
+  a.click();
+}
+
+function showDobHint(input){
+  var hint=document.getElementById("dob-hint");
+  if(!hint)return;
+  var p=smartParseDOB(input.value);
+  if(!p){hint.textContent=input.value.trim()?"⚠ Unrecognised format — try dd/mm/yyyy, 1990-06-15, 15 Jun 1990":"";hint.style.color="var(--warn)";return}
+  var mi=parseInt(p.m,10);
+  var mName=MONTH_NAMES[mi]||"";
+  hint.textContent="✓ "+parseInt(p.d,10)+" "+mName.charAt(0).toUpperCase()+mName.slice(1)+" "+p.y+" — "+datePerms(input.value).length+" date variants";
+  hint.style.color="var(--accent)";
+}
+
+function showFlash(msg){
+  var btn=document.querySelector(".btn-sm");
+  var orig=btn.innerHTML;btn.textContent=msg;
+  setTimeout(function(){btn.innerHTML=orig},1200);
+}
+
+window.addEventListener("load",function(){updateEstimate()});
+</script></body></html>
